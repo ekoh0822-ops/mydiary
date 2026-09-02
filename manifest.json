@@ -4,15 +4,9 @@
   "icons": [
     {
       "src": "blue-rose.png",
-      "sizes": "192x192",
+      "sizes": "682x1024",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "blue-rose.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "start_url": "./index.html",
