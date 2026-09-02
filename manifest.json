@@ -3,15 +3,10 @@
   "name": "321 離線日記",
   "icons": [
     {
-      "src": "blue-rose.png",
+      "src": "icon.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "blue-rose.png",
-      "sizes": "any",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "start_url": "./index.html",
