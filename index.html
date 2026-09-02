@@ -13,7 +13,6 @@
     h2 { font-size: 22px; color: #1a1a1a; margin-top: 10px; margin-bottom: 4px; }
     .subtitle { font-size: 13px; color: #8e8e93; margin-bottom: 20px; display: block; }
     
-    /* 分頁頁面切換 */
     .page { display: none; }
     .page.active { display: block; }
 
@@ -21,7 +20,7 @@
     .breath-section { text-align: center; margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
     
-    /* 輸入框與按鈕 */
+    /* 輸入框與卡片 */
     .card { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .section-title { font-weight: bold; margin-bottom: 8px; display: block; color: #007aff; font-size: 15px; }
     input[type="text"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; }
@@ -32,7 +31,7 @@
     .calendar-card { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
     .calendar-day-head { font-size: 12px; color: #8e8e93; padding-bottom: 6px; }
-    .calendar-date { font-size: 14px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+    .calendar-date { font-size: 14px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; }
     .calendar-date.has-data { background: #ff7d00; color: white; font-weight: bold; }
     .calendar-date.is-today { border: 2px solid #ff7d00; }
 
@@ -42,9 +41,18 @@
     .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
     .tag { background: #fff3e0; color: #d97706; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; }
 
+    /* 彈窗 Modal */
+    .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; position: relative; }
+    .modal-close { position: absolute; top: 15px; right: 20px; font-size: 20px; border: none; background: none; cursor: pointer; color: #8e8e93; width: auto; padding: 0; }
+    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; }
+    .modal-list li { font-size: 14px; color: #333; margin-bottom: 6px; padding-left: 12px; position: relative; }
+    .modal-list li::before { content: "•"; position: absolute; left: 0; color: #8e8e93; }
+
     /* 底部分頁導覽列 */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #ffffff; border-top: 1px solid #e5e5ea; display: flex; justify-content: space-around; align-items: center; max-width: 450px; margin: 0 auto; }
-    .nav-item { border: none; background: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; padding: 0; }
+    .nav-item { border: none; background: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; padding: 0; width: auto; }
     .nav-item.active { color: #ff7d00; font-weight: bold; }
     .nav-icon { font-size: 18px; margin-bottom: 2px; }
   </style>
@@ -94,7 +102,7 @@
     <!-- 分頁 2：日曆回顧 -->
     <div id="page-calendar" class="page">
       <h2>日曆回顧</h2>
-      <span class="subtitle">查看你的心情歷程</span>
+      <span class="subtitle">查看 your 心情歷程</span>
       <div class="calendar-card">
         <div style="text-align:center; font-weight:bold; margin-bottom:12px;" id="calendarMonthTitle"></div>
         <div class="calendar-grid">
@@ -134,6 +142,23 @@
 
   </div>
 
+  <!-- 日歷詳情彈窗 Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h3 id="modalDate" style="margin-top:0; color:#1d1d1f;">2026年9月1日</h3>
+      
+      <span class="section-title">🟢 感恩的事</span>
+      <ul class="modal-list" id="modalGratitude"></ul>
+
+      <span class="section-title">🟡 改善的事</span>
+      <ul class="modal-list" id="modalImprovement"></ul>
+
+      <span class="section-title">🔵 突破的事</span>
+      <ul class="modal-list" id="modalBreakthrough"></ul>
+    </div>
+  </div>
+
   <!-- 底部導覽列 -->
   <div class="bottom-nav">
     <button class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">🏠</span>首頁</button>
@@ -143,7 +168,6 @@
   </div>
 
   <script>
-    // 頁面切換邏輯
     function switchPage(pageId, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -196,38 +220,51 @@
       container.appendChild(newInput);
     }
 
-    // 儲存日記
+    // 核心優化：同一天重複儲存時自動合併歸類！
     function saveJournal() {
       const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
       const today = new Date().toISOString().split('T')[0];
       
-      const entry = {
-        id: Date.now(),
-        date: today,
-        gratitude: getValues('g-item'),
-        improvement: getValues('i-item'),
-        breakthrough: getValues('b-item')
-      };
+      const newGratitude = getValues('g-item');
+      const newImprovement = getValues('i-item');
+      const newBreakthrough = getValues('b-item');
 
-      if (entry.gratitude.length === 0 && entry.improvement.length === 0 && entry.breakthrough.length === 0) {
+      if (newGratitude.length === 0 && newImprovement.length === 0 && newBreakthrough.length === 0) {
         alert('請至少填寫一項內容再儲存喔！');
         return;
       }
 
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      logs.unshift(entry);
-      localStorage.setItem('my_journals', JSON.stringify(logs));
+      let existingEntry = logs.find(l => l.date === today);
 
+      if (existingEntry) {
+        // 同一天：自動追加合併
+        existingEntry.gratitude.push(...newGratitude);
+        existingEntry.improvement.push(...newImprovement);
+        existingEntry.breakthrough.push(...newBreakthrough);
+      } else {
+        // 新的一天：建立新卡片
+        logs.unshift({
+          id: Date.now(),
+          date: today,
+          gratitude: newGratitude,
+          improvement: newImprovement,
+          breakthrough: newBreakthrough
+        });
+      }
+
+      localStorage.setItem('my_journals', JSON.stringify(logs));
       document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
-      alert('日記已成功儲存！今天你寫了 ' + entry.gratitude.length + ' 件感恩的事 ☃︎');
+      alert('日記已成功儲存並合併到今天的紀錄中 ☃︎');
     }
 
-    // 生成日曆打卡
+    // 日曆生成與點擊事件
     function renderCalendar() {
       const daysContainer = document.getElementById('calendarDays');
       const monthTitle = document.getElementById('calendarMonthTitle');
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      const loggedDates = new Set(logs.map(l => l.date));
+      const logMap = {};
+      logs.forEach(l => logMap[l.date] = l);
 
       const now = new Date();
       const year = now.getFullYear();
@@ -243,36 +280,71 @@
       
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const hasData = loggedDates.has(dateStr) ? 'has-data' : '';
+        const hasData = logMap[dateStr] ? 'has-data' : '';
         const isToday = dateStr === todayStr ? 'is-today' : '';
-        html += `<div class="calendar-date ${hasData} ${isToday}">${day}</div>`;
+        html += `<div class="calendar-date ${hasData} ${isToday}" onclick="openModal('${dateStr}')">${day}</div>`;
       }
       daysContainer.innerHTML = html;
     }
 
-    // 數據統計與關鍵詞
+    // 彈窗 Modal 開啟邏輯
+    function openModal(dateStr) {
+      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      const entry = logs.find(l => l.date === dateStr);
+      if (!entry) return; // 沒寫日記的日期不跳彈窗
+
+      document.getElementById('modalDate').innerText = dateStr;
+      
+      const renderList = (elementId, items) => {
+        const el = document.getElementById(elementId);
+        el.innerHTML = items.length ? items.map(i => `<li>${i}</li>`).join('') : '<li style="color:#aaa;">無紀錄</li>';
+      };
+
+      renderList('modalGratitude', entry.gratitude);
+      renderList('modalImprovement', entry.improvement);
+      renderList('modalBreakthrough', entry.breakthrough);
+
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    // 關鍵詞提取（智能過濾廢詞與短句拆解）
     function renderStats() {
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      const uniqueDates = new Set(logs.map(l => l.date));
-      document.getElementById('totalDaysCount').innerText = uniqueDates.size;
+      document.getElementById('totalDaysCount').innerText = logs.length;
 
-      // 提取所有文字生成簡單關鍵詞
-      let allText = [];
-      logs.forEach(l => {
-        allText.push(...l.gratitude, ...l.improvement, ...l.breakthrough);
-      });
+      let rawTexts = [];
+      logs.forEach(l => rawTexts.push(...l.gratitude, ...l.improvement, ...l.breakthrough));
 
       const tagCloud = document.getElementById('tagCloud');
-      if (allText.length === 0) {
+      if (rawTexts.length === 0) {
         tagCloud.innerHTML = '<span class="tag">尚無數據，多寫幾篇日記吧！</span>';
         return;
       }
 
-      // 統計高頻出現的字句
-      let counts = {};
-      allText.forEach(text => { counts[text] = (counts[text] || 0) + 1; });
+      // 停用詞過濾（移除無意義詞彙）
+      const stopWords = ["今天", "我", "了", "很", "非常", "的", "在", "是", "也", "有", "好", "完成", "寫了"];
+      let wordCounts = {};
 
-      tagCloud.innerHTML = Object.keys(counts).map(word => `<span class="tag">${word}</span>`).join('');
+      rawTexts.forEach(sentence => {
+        // 簡單淨化：移除符號與停用詞
+        let cleanSentence = sentence.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()！，。？]/g, "");
+        stopWords.forEach(sw => { cleanSentence = cleanSentence.split(sw).join(" "); });
+        
+        let words = cleanSentence.split(/\s+/).filter(w => w.length >= 2); // 只留長度>=2的實詞
+        words.forEach(w => { wordCounts[w] = (wordCounts[w] || 0) + 1; });
+      });
+
+      let sortedWords = Object.keys(wordCounts).sort((a,b) => wordCounts[b] - wordCounts[a]);
+
+      if (sortedWords.length === 0) {
+        tagCloud.innerHTML = '<span class="tag">寫多一點句子來產生關鍵詞吧！</span>';
+      } else {
+        tagCloud.innerHTML = sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('');
+      }
     }
 
     function exportData() {
