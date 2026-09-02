@@ -6,7 +6,13 @@
       "src": "https://ekoh0822-ops.github.io/mydiary/blue-rose.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://ekoh0822-ops.github.io/mydiary/blue-rose.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "start_url": "https://ekoh0822-ops.github.io/mydiary/",
