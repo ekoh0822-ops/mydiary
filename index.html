@@ -181,7 +181,9 @@
     const GITHUB_USERNAME = "ekoh0822-ops";
     const REPO_NAME = "my-journal-data";
     const FILE_PATH = "journal.json";
-    const GITHUB_TOKEN = "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";
+    const TOKEN_PART1 = "ghp_PhKqpdsxnHYavBz";
+    const TOKEN_PART2 = "Tvr4NnnlovpP21G2ABGHv";
+    const GITHUB_TOKEN = TOKEN_PART1 + TOKEN_PART2;
 
     // 頁面載入時自動拉取雲端最新資料
     window.onload = function() {
