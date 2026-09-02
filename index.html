@@ -3,95 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>321 離線日記</title>
-<link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
-<link rel="icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
+  <title>321 離線日記 ☃︎</title>
+  <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
+  <link rel="icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1d1d1f; margin: 0; padding: 20px; }
     .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    h1, h2 { text-align: center; }
-    textarea { width: 100%; height: 60px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; padding: 8px; box-sizing: border-box; }
+    h2 { text-align: center; color: #333; margin-top: 10px; }
+    .section-title { font-weight: bold; margin-top: 18px; margin-bottom: 8px; display: block; color: #007aff; }
+    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
     button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 16px; cursor: pointer; margin-top: 8px; }
-    /* 478 呼吸動畫 */
-    .breath-section { text-align: center; margin-bottom: 24px; padding: 16px; background: #eef6ff; border-radius: 12px; }
-    .circle { width: 100px; height: 100px; background: #70b4ff; border-radius: 50%; margin: 16px auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; transition: transform 1s ease-in-out; }
-    .inhale { transform: scale(1.5); }
-    .hold { transform: scale(1.5); }
-    .exhale { transform: scale(1.0); }
+    .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 14px; margin-top: 0; margin-bottom: 12px; }
+    
+    /* 478 呼吸：固定尺寸外框與正數顯示 */
+    .breath-section { text-align: center; margin-bottom: 24px; padding: 20px; background: #eef6ff; border-radius: 16px; }
+    .circle { width: 130px; height: 130px; border: 6px solid #007aff; border-radius: 50%; margin: 16px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
+    .number-display { font-size: 42px; font-weight: bold; line-height: 1; }
+    .status-text { font-size: 14px; margin-top: 6px; color: #555; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>478 呼吸放鬆</h2>
     <div class="breath-section">
-      <div id="breathCircle" class="circle">準備</div>
-      <div id="breathText">點擊下方按鈕開始</div>
-      <button onclick="startBreathing()">開始 4-7-8 呼吸</button>
+      <div class="circle">
+        <span id="numDisplay" class="number-display">478</span>
+        <span id="statusText" class="status-text">準備</span>
+      </div>
+      <button id="startBtn" onclick="startBreathing()">開始 4-7-8 呼吸</button>
     </div>
 
-    <h2>321 離線日記</h2>
-    <label>3 件感恩的事：</label>
-    <textarea id="gratitude" placeholder="1... 2... 3..."></textarea>
+    <h2>321 離線日記 ☃︎</h2>
     
-    <label>2 件改善的事：</label>
-    <textarea id="improvement" placeholder="1... 2..."></textarea>
-    
-    <label>1 件突破的事：</label>
-    <textarea id="breakthrough" placeholder="1..."></textarea>
-    
-    <button onclick="saveJournal()">儲存到本地</button>
-    <button onclick="exportData()" style="background:#34c759;">匯出JSON備份</button>
+    <span class="section-title">🟢 感恩的事：</span>
+    <div id="gratitude-list">
+      <input type="text" class="g-item" placeholder="感恩 1...">
+      <input type="text" class="g-item" placeholder="感恩 2...">
+      <input type="text" class="g-item" placeholder="感恩 3...">
+    </div>
+    <button class="add-btn" onclick="addBox('gratitude-list', 'g-item', '更多感恩...')">➕ 新增更多感恩</button>
+
+    <span class="section-title">🟡 改善的事：</span>
+    <div id="improvement-list">
+      <input type="text" class="i-item" placeholder="改善 1...">
+      <input type="text" class="i-item" placeholder="改善 2...">
+    </div>
+    <button class="add-btn" onclick="addBox('improvement-list', 'i-item', '更多改善...')">➕ 新增更多改善</button>
+
+    <span class="section-title">🔵 突破的事：</span>
+    <div id="breakthrough-list">
+      <input type="text" class="b-item" placeholder="突破 1...">
+    </div>
+    <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多突破...')">➕ 新增更多突破</button>
+
+    <button onclick="saveJournal()" style="background:#007aff; font-weight:bold; margin-top:20px;">儲存到手機本地</button>
+    <button onclick="exportData()" style="background:#34c759;">匯出 JSON 備份</button>
   </div>
 
   <script>
-    // 478 呼吸邏輯
+    let isBreathing = false;
+
+    // 核心：從 1 開始正數的 478 邏輯
     function startBreathing() {
-      const circle = document.getElementById('breathCircle');
-      const text = document.getElementById('breathText');
+      if (isBreathing) return;
+      isBreathing = true;
       
-      let step = 0;
-      function runCycle() {
-        // 吸氣 4 秒
-        text.innerText = "吸氣...";
-        circle.className = "circle inhale";
-        circle.style.transitionDuration = "4s";
-        
-        setTimeout(() => {
-          // 憋氣 7 秒
-          text.innerText = "憋氣...";
-          circle.className = "circle hold";
+      const numDisplay = document.getElementById('numDisplay');
+      const statusText = document.getElementById('statusText');
+      const btn = document.getElementById('startBtn');
+      
+      btn.innerText = "呼吸進行中...";
+      btn.style.opacity = "0.6";
+
+      // 階段 1：吸氣 1 -> 4
+      let count = 1;
+      statusText.innerText = "1-4s 吸氣...";
+      numDisplay.innerText = count;
+
+      let timer = setInterval(() => {
+        count++;
+        if (count <= 4) {
+          numDisplay.innerText = count;
+        } else {
+          clearInterval(timer);
           
-          setTimeout(() => {
-            // 吐氣 8 秒
-            text.innerText = "吐氣...";
-            circle.className = "circle exhale";
-            circle.style.transitionDuration = "8s";
-            
-            setTimeout(() => {
-              text.innerText = "完成一次循環！";
-            }, 8000);
-          }, 7000);
-        }, 4000);
-      }
-      runCycle();
+          // 階段 2：憋氣 1 -> 7
+          count = 1;
+          statusText.innerText = "1-7s 憋氣...";
+          numDisplay.innerText = count;
+
+          let holdTimer = setInterval(() => {
+            count++;
+            if (count <= 7) {
+              numDisplay.innerText = count;
+            } else {
+              clearInterval(holdTimer);
+
+              // 階段 3：吐氣 1 -> 8
+              count = 1;
+              statusText.innerText = "1-8s 吐氣...";
+              numDisplay.innerText = count;
+
+              let exhaleTimer = setInterval(() => {
+                count++;
+                if (count <= 8) {
+                  numDisplay.innerText = count;
+                } else {
+                  clearInterval(exhaleTimer);
+
+                  // 完成一次循環
+                  statusText.innerText = "完成放鬆";
+                  numDisplay.innerText = "☃︎";
+                  btn.innerText = "再做一次 4-7-8 呼吸";
+                  btn.style.opacity = "1";
+                  isBreathing = false;
+                }
+              }, 1000);
+            }
+          }, 1000);
+        }
+      }, 1000);
     }
 
-    // 離線 LocalStorage 儲存邏輯
+    // 動態新增輸入框
+    function addBox(containerId, className, placeholderText) {
+      const container = document.getElementById(containerId);
+      const newInput = document.createElement('input');
+      newInput.type = 'text';
+      newInput.className = className;
+      newInput.placeholder = placeholderText;
+      container.appendChild(newInput);
+    }
+
+    // 儲存邏輯
     function saveJournal() {
+      const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
+      
       const entry = {
         date: new Date().toISOString().split('T')[0],
-        gratitude: document.getElementById('gratitude').value,
-        improvement: document.getElementById('improvement').value,
-        breakthrough: document.getElementById('breakthrough').value
+        gratitude: getValues('g-item'),
+        improvement: getValues('i-item'),
+        breakthrough: getValues('b-item')
       };
       
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
       logs.push(entry);
       localStorage.setItem('my_journals', JSON.stringify(logs));
-      alert('日記已完全存在手機本地！');
+      alert('日記已成功儲存！今天你寫了 ' + entry.gratitude.length + ' 件感恩的事 ☃︎');
     }
 
-    // 匯出 JSON 檔案
+    // 匯出 JSON 備份
     function exportData() {
       const data = localStorage.getItem('my_journals') || '[]';
       const blob = new Blob([data], { type: 'application/json' });
