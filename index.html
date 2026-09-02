@@ -17,6 +17,9 @@
     .page { display: none; }
     .page.active { display: block; }
 
+    /* 雲端同步狀態標籤 */
+    .sync-status { font-size: 12px; color: #34c759; background: #e8f9ed; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+
     /* 呼吸與輸入卡片 */
     .breath-section { text-align: center; margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
@@ -77,6 +80,8 @@
       </div>
 
       <h2>321 離線日記 ☃︎</h2>
+      <div id="cloudStatus" class="sync-status">☁️ 雲端狀態：檢查中...</div>
+
       <div class="card">
         <span class="section-title">🟢 感恩的事：</span>
         <div id="gratitude-list">
@@ -99,7 +104,7 @@
         </div>
         <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多自我肯定...')">➕ 新增更多自我肯定</button>
 
-        <button onclick="saveJournal()" style="background:#007aff; margin-top:12px;">儲存到本地</button>
+        <button onclick="saveJournal()" style="background:#007aff; margin-top:12px;">儲存並同步到雲端</button>
       </div>
     </div>
 
@@ -137,21 +142,16 @@
     <!-- 分頁 4：設定與資料同步 -->
     <div id="page-settings" class="page">
       <h2>資料傳輸與同步 ☃︎</h2>
-      <span class="subtitle">無須網路伺服器，100% 本地安全備份</span>
+      <span class="subtitle">GitHub 自動私密雲端同步中</span>
       
       <div class="card">
-        <span class="section-title">📋 快速複製同步字串</span>
-        <button onclick="copyDataText()" style="background:#ff7d00;">一鍵複製日記數據</button>
+        <span class="section-title">☁️ 雲端手動強制同步</span>
+        <button onclick="syncFromCloud(true)" style="background:#007aff; margin-bottom:8px;">拉取雲端最新資料</button>
+        <button onclick="syncToCloud()" style="background:#ff7d00;">推送到雲端倉庫</button>
       </div>
 
       <div class="card">
-        <span class="section-title">📥 貼上並匯入資料</span>
-        <textarea id="importInput" rows="3" placeholder="在此處貼上複製的文字..."></textarea>
-        <button onclick="importDataText()" style="background:#007aff; margin-top:6px;">匯入貼上的資料</button>
-      </div>
-
-      <div class="card">
-        <span class="section-title">📁 檔案備份與還原</span>
+        <span class="section-title">📁 手動檔案備份與還原</span>
         <button onclick="exportData()" style="background:#34c759; margin-bottom:8px;">匯出 JSON 備份檔</button>
         <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSONFile(event)">
         <button onclick="document.getElementById('jsonFileInput').click()" style="background:#8e8e93;">選擇 JSON 檔匯入</button>
@@ -177,6 +177,84 @@
   </div>
 
   <script>
+    /* ☁️ GitHub 雲端同步金鑰設定 */
+    const GITHUB_USERNAME = "ekoh0822-ops";
+    const REPO_NAME = "my-journal-data";
+    const FILE_PATH = "journal.json";
+    const GITHUB_TOKEN = "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";
+
+    // 頁面載入時自動拉取雲端最新資料
+    window.onload = function() {
+      syncFromCloud();
+    };
+
+    // 從 GitHub 抓取最新日記
+    async function syncFromCloud(isManual = false) {
+      const statusTag = document.getElementById('cloudStatus');
+      statusTag.innerText = "☁️ 雲端同步中..."; statusTag.style.background = "#eef6ff"; statusTag.style.color = "#007aff";
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+        });
+
+        if (res.status === 200) {
+          const data = await res.json();
+          // 解密 base64 編碼的 Unicode 字串
+          const content = decodeURIComponent(escape(atob(data.content)));
+          localStorage.setItem('my_journals', content);
+          localStorage.setItem('gh_sha', data.sha);
+          
+          statusTag.innerText = "☁️ 雲端同步已連線"; statusTag.style.background = "#e8f9ed"; statusTag.style.color = "#34c759";
+          if (isManual) alert("🎉 已成功拉取雲端最新日記！");
+          renderCalendar(); renderStats();
+        } else if (res.status === 404) {
+          statusTag.innerText = "☁️ 雲端尚未建立檔案（首次儲存後自動建立）";
+        }
+      } catch (e) {
+        statusTag.innerText = "☁️ 離線模式（無法連接雲端）"; statusTag.style.background = "#fff3e0"; statusTag.style.color = "#d97706";
+      }
+    }
+
+    // 將本地日記推送備份到 GitHub
+    async function syncToCloud() {
+      const statusTag = document.getElementById('cloudStatus');
+      statusTag.innerText = "☁️ 正在備份至雲端...";
+      
+      const localData = localStorage.getItem('my_journals') || '[]';
+      const sha = localStorage.getItem('gh_sha');
+      
+      // 將中文轉成相容 base64 的字串
+      const contentEncoded = btoa(unescape(encodeURIComponent(localData)));
+
+      const body = {
+        message: "auto sync journal",
+        content: contentEncoded,
+        sha: sha || undefined
+      };
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
+        });
+        
+        if (res.ok) {
+          const resData = await res.json();
+          localStorage.setItem('gh_sha', resData.content.sha);
+          statusTag.innerText = "☁️ 雲端同步成功！"; statusTag.style.background = "#e8f9ed"; statusTag.style.color = "#34c759";
+        } else {
+          alert("雲端同步失敗，請確認網路連線。");
+        }
+      } catch (e) {
+        alert("目前處於離線狀態，已先安全儲存在手機/電腦本地。");
+      }
+    }
+
     function switchPage(pageId, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -229,7 +307,7 @@
       container.appendChild(newInput);
     }
 
-    function saveJournal() {
+    async function saveJournal() {
       const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
       const today = new Date().toISOString().split('T')[0];
       const newGratitude = getValues('g-item'), newImprovement = getValues('i-item'), newBreakthrough = getValues('b-item');
@@ -251,7 +329,9 @@
 
       localStorage.setItem('my_journals', JSON.stringify(logs));
       document.querySelectorAll('textarea').forEach(i => { if(i.id !== 'importInput') i.value = ''; });
-      alert('日記已成功儲存並合併到今天的紀錄中 ☃︎');
+      
+      alert('日記已成功儲存！正在同步至私密雲端... ☃︎');
+      await syncToCloud();
     }
 
     function renderCalendar() {
@@ -298,7 +378,6 @@
       document.getElementById('modalOverlay').classList.add('active');
     }
 
-    /* ✏️ 進入單條獨立編輯介面 */
     function editJournal(dateStr) {
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
       const entry = logs.find(l => l.date === dateStr);
@@ -328,7 +407,7 @@
         <div id="edit-b-container">${renderRows(entry.breakthrough, 'edit-b')}</div>
         <button class="add-btn" onclick="addEditRow('edit-b-container', 'edit-b')">➕ 追加自我肯定</button>
 
-        <button onclick="saveEdit('${dateStr}')" style="background:#007aff; margin-top:15px;">儲存變更</button>
+        <button onclick="saveEdit('${dateStr}')" style="background:#007aff; margin-top:15px;">儲存變更並同步</button>
       `;
 
       document.getElementById('modalBody').innerHTML = html;
@@ -342,8 +421,7 @@
       container.appendChild(div);
     }
 
-    /* 💾 儲存單條修改後的日記 */
-    function saveEdit(dateStr) {
+    async function saveEdit(dateStr) {
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
       let entryIndex = logs.findIndex(l => l.date === dateStr);
       if (entryIndex === -1) return;
@@ -354,7 +432,6 @@
       const newI = getValues('edit-i');
       const newB = getValues('edit-b');
 
-      // 如果全部都被刪光了，才把那天整個移除
       if (newG.length === 0 && newI.length === 0 && newB.length === 0) {
         logs.splice(entryIndex, 1);
       } else {
@@ -364,9 +441,9 @@
       }
 
       localStorage.setItem('my_journals', JSON.stringify(logs));
-      alert('更新成功！☃︎');
       closeModal();
       renderCalendar();
+      await syncToCloud();
     }
 
     function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
@@ -391,35 +468,6 @@
       tagCloud.innerHTML = sortedWords.length ? sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('') : '<span class="tag">寫多一點句子產生關鍵詞！</span>';
     }
 
-    function copyDataText() {
-      const data = localStorage.getItem('my_journals') || '[]';
-      if (data === '[]') { alert('目前沒有日記可以複製喔！'); return; }
-      
-      navigator.clipboard.writeText(data).then(() => {
-        alert('📋 日記數據已複製！');
-      }).catch(() => {
-        prompt('請手動複製下方這段文字：', data);
-      });
-    }
-
-    function importDataText() {
-      const text = document.getElementById('importInput').value.trim();
-      if (!text) { alert('請先貼上資料文字喔！'); return; }
-      try {
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          localStorage.setItem('my_journals', text);
-          alert('🎉 資料成功匯入！');
-          document.getElementById('importInput').value = '';
-          location.reload();
-        } else {
-          alert('格式不正確！');
-        }
-      } catch(e) {
-        alert('格式無效！');
-      }
-    }
-
     function exportData() {
       const data = localStorage.getItem('my_journals') || '[]';
       const blob = new Blob([data], { type: 'application/json' });
@@ -433,12 +481,13 @@
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = async function(evt) {
         try {
           const parsed = JSON.parse(evt.target.result);
           if (Array.isArray(parsed)) {
             localStorage.setItem('my_journals', evt.target.result);
-            alert('🎉 JSON 備份檔匯入成功！');
+            alert('🎉 JSON 備份檔匯入成功！正在同步至雲端...');
+            await syncToCloud();
             location.reload();
           }
         } catch(err) {
