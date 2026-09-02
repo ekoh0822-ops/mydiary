@@ -3,13 +3,13 @@
   "name": "321 離線日記",
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "https://ekoh0822-ops.github.io/mydiary/blue-rose.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ],
-  "start_url": "./index.html",
+  "start_url": "https://ekoh0822-ops.github.io/mydiary/",
   "background_color": "#f7f8fa",
   "theme_color": "#007aff",
   "display": "standalone"
