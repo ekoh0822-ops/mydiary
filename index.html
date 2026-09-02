@@ -6,11 +6,6 @@
   <title>321 離線日記 ☃︎</title>
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
   <link rel="icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
-  
-  <!-- 替換成穩定支援中文與大資料量的 QR Code 生成庫 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- 相機掃描庫 -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -27,7 +22,7 @@
     .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
     .card { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .section-title { font-weight: bold; margin-bottom: 8px; display: block; color: #007aff; font-size: 15px; }
-    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; }
+    input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; font-family: inherit; }
     button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 15px; font-weight: bold; cursor: pointer; }
     .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 13px; font-weight: normal; margin-bottom: 8px; }
 
@@ -57,8 +52,6 @@
     .nav-item { border: none; background: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; padding: 0; width: auto; }
     .nav-item.active { color: #ff7d00; font-weight: bold; }
     .nav-icon { font-size: 18px; margin-bottom: 2px; }
-
-    #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -134,31 +127,33 @@
       </div>
     </div>
 
-    <!-- 分頁 4：設定與 QR Code 傳輸 -->
+    <!-- 分頁 4：設定與資料同步 -->
     <div id="page-settings" class="page">
       <h2>資料傳輸與同步 ☃︎</h2>
-      <span class="subtitle">無傳輸伺服器，100% 離線光學同步</span>
+      <span class="subtitle">無須網路伺服器，100% 本地安全備份</span>
       
       <div class="card">
-        <span class="section-title">💻 電腦發送端：生成資料 QR Code</span>
-        <button onclick="generateQRCode()" style="background:#ff7d00;">產生同步 QR Code</button>
+        <span class="section-title">📋 快速複製同步字串</span>
+        <button onclick="copyDataText()" style="background:#ff7d00;">一鍵複製日記數據</button>
       </div>
 
       <div class="card">
-        <span class="section-title">📱 手機接收端：鏡頭掃描接收</span>
-        <button onclick="startScanner()" style="background:#007aff;">開啟鏡頭掃描</button>
-        <div id="reader"></div>
+        <span class="section-title">📥 貼上並匯入資料</span>
+        <textarea id="importInput" rows="3" placeholder="在此處貼上複製的文字..."></textarea>
+        <button onclick="importDataText()" style="background:#007aff; margin-top:6px;">匯入貼上的資料</button>
       </div>
 
       <div class="card">
-        <span class="section-title">📁 檔案備份</span>
-        <button onclick="exportData()" style="background:#34c759;">匯出 JSON 備份檔</button>
+        <span class="section-title">📁 檔案備份與還原</span>
+        <button onclick="exportData()" style="background:#34c759; margin-bottom:8px;">匯出 JSON 備份檔</button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSONFile(event)">
+        <button onclick="document.getElementById('jsonFileInput').click()" style="background:#8e8e93;">選擇 JSON 檔匯入</button>
       </div>
     </div>
 
   </div>
 
-  <!-- 詳情 / QR Code 彈窗 -->
+  <!-- 詳情彈窗 -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -316,62 +311,38 @@
       tagCloud.innerHTML = sortedWords.length ? sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('') : '<span class="tag">寫多一點句子產生關鍵詞！</span>';
     }
 
-    /* 🌟 修正後的 QR Code 彈窗產生函數 */
-    function generateQRCode() {
-      const rawData = localStorage.getItem('my_journals') || '[]';
-      if (rawData === '[]') {
-        alert('目前沒有任何日記資料可以同步喔！');
-        return;
-      }
+    /* 🌟 文字一鍵複製同步 */
+    function copyDataText() {
+      const data = localStorage.getItem('my_journals') || '[]';
+      if (data === '[]') { alert('目前沒有日記可以複製喔！'); return; }
+      
+      navigator.clipboard.writeText(data).then(() => {
+        alert('📋 日記數據已複製到剪貼簿！你可以發到 LINE 或 Telegram 貼到手機上了！');
+      }).catch(() => {
+        prompt('請手動複製下方這段文字：', data);
+      });
+    }
 
-      // 使用 Modal 視圖呈現 QR Code
-      const modalBody = document.getElementById('modalBody');
-      modalBody.innerHTML = `
-        <h3 style="margin-top:0;">同步 QR Code</h3>
-        <p style="font-size:12px; color:#666; margin-bottom:15px;">請用手機瀏覽器打開雪人日記，點「開啟鏡頭掃描」對準此處：</p>
-        <canvas id="qrCanvas"></canvas>
-      `;
-
-      document.getElementById('modalOverlay').classList.add('active');
-
-      // 使用 QRious 精準繪製
-      setTimeout(() => {
-        try {
-          new QRious({
-            element: document.getElementById('qrCanvas'),
-            value: rawData,
-            size: 220,
-            level: 'L' // 低容錯率以支援放更多字數
-          });
-        } catch(e) {
-          modalBody.innerHTML += `<p style="color:red; font-size:12px;">資料量較大，建議使用 JSON 檔案匯出匯入方式同步！</p>`;
+    /* 🌟 貼上文字匯入 */
+    function importDataText() {
+      const text = document.getElementById('importInput').value.trim();
+      if (!text) { alert('請先貼上資料文字喔！'); return; }
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          localStorage.setItem('my_journals', text);
+          alert('🎉 資料成功匯入！');
+          document.getElementById('importInput').value = '';
+          location.reload();
+        } else {
+          alert('格式不正確，請確認複製的是完整的日記文字。');
         }
-      }, 100);
+      } catch(e) {
+        alert('格式無效，無法解析貼上的文字。');
+      }
     }
 
-    /* 相機掃描 */
-    function startScanner() {
-      const html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start(
-        { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => {
-          try {
-            const parsedData = JSON.parse(decodedText);
-            if (Array.isArray(parsedData)) {
-              localStorage.setItem('my_journals', decodedText);
-              alert('🎉 同步成功！資料已寫入！');
-              html5QrCode.stop();
-              location.reload();
-            }
-          } catch(e) {
-            alert('掃描失敗，請確定掃描的是雪人日記產生的 QR Code！');
-          }
-        },
-        (err) => {}
-      ).catch(err => alert('無法開啟鏡頭，請確認有給予瀏覽器相機權限喔！'));
-    }
-
+    /* 📁 JSON 檔備份與匯入 */
     function exportData() {
       const data = localStorage.getItem('my_journals') || '[]';
       const blob = new Blob([data], { type: 'application/json' });
@@ -379,6 +350,25 @@
       a.href = URL.createObjectURL(blob);
       a.download = `journal_backup_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
+    }
+
+    function importJSONFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (Array.isArray(parsed)) {
+            localStorage.setItem('my_journals', evt.target.result);
+            alert('🎉 JSON 備份檔匯入成功！');
+            location.reload();
+          }
+        } catch(err) {
+          alert('讀取失敗，請確認選擇的是有效的 JSON 備份檔案。');
+        }
+      };
+      reader.readAsText(file);
     }
   </script>
 </body>
