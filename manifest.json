@@ -4,9 +4,8 @@
   "icons": [
     {
       "src": "https://ekoh0822-ops.github.io/mydiary/blue-rose.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "sizes": "682x1024",
+      "type": "image/png"
     }
   ],
   "start_url": "https://ekoh0822-ops.github.io/mydiary/",
