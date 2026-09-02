@@ -2,81 +2,159 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>321 離線日記 ☃︎</title>
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
   <link rel="icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1d1d1f; margin: 0; padding: 20px; }
-    .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    h2 { text-align: center; color: #333; margin-top: 10px; }
-    .section-title { font-weight: bold; margin-top: 18px; margin-bottom: 8px; display: block; color: #007aff; }
-    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-    button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 16px; cursor: pointer; margin-top: 8px; }
-    .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 14px; margin-top: 0; margin-bottom: 12px; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f7f8fa; color: #1d1d1f; margin: 0; padding: 0 0 70px 0; }
+    .container { max-width: 450px; margin: 0 auto; padding: 20px; }
+    h2 { font-size: 22px; color: #1a1a1a; margin-top: 10px; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #8e8e93; margin-bottom: 20px; display: block; }
     
-    /* 478 呼吸 */
-    .breath-section { text-align: center; margin-bottom: 24px; padding: 20px; background: #eef6ff; border-radius: 16px; }
-    .circle { width: 120px; height: 120px; border: 6px solid #007aff; border-radius: 50%; margin: 16px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
-    .number-display { font-size: 40px; font-weight: bold; line-height: 1; }
-    .status-text { font-size: 14px; margin-top: 6px; color: #555; }
+    /* 分頁頁面切換 */
+    .page { display: none; }
+    .page.active { display: block; }
 
-    /* 歷史記錄卡片 */
-    .history-section { margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px; }
-    .journal-card { background: #f9f9fb; border: 1px solid #e5e5ea; border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative; }
-    .card-date { font-weight: bold; color: #007aff; margin-bottom: 8px; font-size: 14px; }
-    .card-item { font-size: 14px; color: #333; margin: 4px 0; }
-    .delete-btn { position: absolute; top: 12px; right: 12px; background: none; color: #ff3b30; border: none; font-size: 14px; padding: 0; width: auto; cursor: pointer; }
+    /* 478 呼吸 */
+    .breath-section { text-align: center; margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
+    
+    /* 輸入框與按鈕 */
+    .card { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .section-title { font-weight: bold; margin-bottom: 8px; display: block; color: #007aff; font-size: 15px; }
+    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 15px; font-weight: bold; cursor: pointer; }
+    .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 13px; font-weight: normal; margin-bottom: 8px; }
+
+    /* 日曆視圖 */
+    .calendar-card { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
+    .calendar-day-head { font-size: 12px; color: #8e8e93; padding-bottom: 6px; }
+    .calendar-date { font-size: 14px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+    .calendar-date.has-data { background: #ff7d00; color: white; font-weight: bold; }
+    .calendar-date.is-today { border: 2px solid #ff7d00; }
+
+    /* 統計與卡片 */
+    .stat-box { background: #2f80ed; color: white; padding: 20px; border-radius: 16px; margin-bottom: 16px; }
+    .stat-number { font-size: 36px; font-weight: bold; }
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { background: #fff3e0; color: #d97706; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+
+    /* 底部分頁導覽列 */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #ffffff; border-top: 1px solid #e5e5ea; display: flex; justify-content: space-around; align-items: center; max-width: 450px; margin: 0 auto; }
+    .nav-item { border: none; background: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; padding: 0; }
+    .nav-item.active { color: #ff7d00; font-weight: bold; }
+    .nav-icon { font-size: 18px; margin-bottom: 2px; }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h2>478 呼吸放鬆</h2>
-    <div class="breath-section">
-      <div class="circle">
-        <span id="numDisplay" class="number-display">478</span>
-        <span id="statusText" class="status-text">準備</span>
-      </div>
-      <button id="startBtn" onclick="startBreathing()">開始 4-7-8 呼吸</button>
-    </div>
-
-    <h2>321 離線日記 ☃︎</h2>
     
-    <span class="section-title">🟢 感恩的事：</span>
-    <div id="gratitude-list">
-      <input type="text" class="g-item" placeholder="感恩 1...">
-      <input type="text" class="g-item" placeholder="感恩 2...">
-      <input type="text" class="g-item" placeholder="感恩 3...">
-    </div>
-    <button class="add-btn" onclick="addBox('gratitude-list', 'g-item', '更多感恩...')">➕ 新增更多感恩</button>
+    <!-- 分頁 1：首頁 (輸入日記) -->
+    <div id="page-home" class="page active">
+      <h2>478 呼吸放鬆</h2>
+      <div class="breath-section">
+        <div class="circle">
+          <span id="numDisplay" style="font-size:32px; font-weight:bold;">478</span>
+          <span id="statusText" style="font-size:12px;">準備</span>
+        </div>
+        <button id="startBtn" onclick="startBreathing()">開始 4-7-8 呼吸</button>
+      </div>
 
-    <span class="section-title">🟡 改善的事：</span>
-    <div id="improvement-list">
-      <input type="text" class="i-item" placeholder="改善 1...">
-      <input type="text" class="i-item" placeholder="改善 2...">
-    </div>
-    <button class="add-btn" onclick="addBox('improvement-list', 'i-item', '更多改善...')">➕ 新增更多改善</button>
+      <h2>321 離線日記 ☃︎</h2>
+      <div class="card">
+        <span class="section-title">🟢 感恩的事：</span>
+        <div id="gratitude-list">
+          <input type="text" class="g-item" placeholder="感恩 1...">
+          <input type="text" class="g-item" placeholder="感恩 2...">
+          <input type="text" class="g-item" placeholder="感恩 3...">
+        </div>
+        <button class="add-btn" onclick="addBox('gratitude-list', 'g-item', '更多感恩...')">➕ 新增更多感恩</button>
 
-    <span class="section-title">🔵 突破的事：</span>
-    <div id="breakthrough-list">
-      <input type="text" class="b-item" placeholder="突破 1...">
-    </div>
-    <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多突破...')">➕ 新增更多突破</button>
+        <span class="section-title">🟡 改善的事：</span>
+        <div id="improvement-list">
+          <input type="text" class="i-item" placeholder="改善 1...">
+          <input type="text" class="i-item" placeholder="改善 2...">
+        </div>
+        <button class="add-btn" onclick="addBox('improvement-list', 'i-item', '更多改善...')">➕ 新增更多改善</button>
 
-    <button onclick="saveJournal()" style="background:#007aff; font-weight:bold; margin-top:20px;">儲存到手機/電腦本地</button>
-    <button onclick="exportData()" style="background:#34c759;">匯出 JSON 備份</button>
+        <span class="section-title">🔵 突破的事：</span>
+        <div id="breakthrough-list">
+          <input type="text" class="b-item" placeholder="突破 1...">
+        </div>
+        <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多突破...')">➕ 新增更多突破</button>
 
-    <!-- 歷史日記庫 -->
-    <div class="history-section">
-      <h2>📚 歷史日記庫</h2>
-      <div id="historyLogs"></div>
+        <button onclick="saveJournal()" style="background:#007aff; margin-top:12px;">儲存到手機/電腦本地</button>
+      </div>
     </div>
+
+    <!-- 分頁 2：日曆回顧 -->
+    <div id="page-calendar" class="page">
+      <h2>日曆回顧</h2>
+      <span class="subtitle">查看你的心情歷程</span>
+      <div class="calendar-card">
+        <div style="text-align:center; font-weight:bold; margin-bottom:12px;" id="calendarMonthTitle"></div>
+        <div class="calendar-grid">
+          <div class="calendar-day-head">日</div><div class="calendar-day-head">一</div><div class="calendar-day-head">二</div>
+          <div class="calendar-day-head">三</div><div class="calendar-day-head">四</div><div class="calendar-day-head">五</div><div class="calendar-day-head">六</div>
+        </div>
+        <div class="calendar-grid" id="calendarDays"></div>
+      </div>
+    </div>
+
+    <!-- 分頁 3：數據統計 -->
+    <div id="page-stats" class="page">
+      <h2>數據統計</h2>
+      <span class="subtitle">看看你的成長軌跡</span>
+      <div class="stat-box">
+        <div style="font-size:14px; opacity:0.9;">📅 累計記錄天數</div>
+        <div class="stat-number" id="totalDaysCount">0</div>
+      </div>
+      
+      <div class="card">
+        <span class="section-title" style="color:#1d1d1f;">常見關鍵詞</span>
+        <div class="tag-cloud" id="tagCloud">
+          <span class="tag">尚無數據，多寫幾篇日記吧！</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 4：設定/備份 -->
+    <div id="page-settings" class="page">
+      <h2>系統設定</h2>
+      <span class="subtitle">資料管理與離線備份</span>
+      <div class="card">
+        <button onclick="exportData()" style="background:#34c759; margin-bottom:10px;">匯出 JSON 備份檔</button>
+        <p style="font-size:12px; color:#8e8e93; text-align:center;">資料 100% 存在您的裝置本地 LocalStorage</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部導覽列 -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">🏠</span>首頁</button>
+    <button class="nav-item" onclick="switchPage('calendar', this)"><span class="nav-icon">📅</span>日曆</button>
+    <button class="nav-item" onclick="switchPage('stats', this)"><span class="nav-icon">📊</span>統計</button>
+    <button class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span>設定</button>
   </div>
 
   <script>
-    // 頁面載入時自動讀取歷史紀錄
-    document.addEventListener('DOMContentLoaded', renderHistory);
+    // 頁面切換邏輯
+    function switchPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      btn.classList.add('active');
 
+      if (pageId === 'calendar') renderCalendar();
+      if (pageId === 'stats') renderStats();
+    }
+
+    // 正數 478 呼吸
     let isBreathing = false;
     function startBreathing() {
       if (isBreathing) return;
@@ -118,61 +196,83 @@
       container.appendChild(newInput);
     }
 
-    // 儲存邏輯
+    // 儲存日記
     function saveJournal() {
       const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
+      const today = new Date().toISOString().split('T')[0];
+      
       const entry = {
         id: Date.now(),
-        date: new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+        date: today,
         gratitude: getValues('g-item'),
         improvement: getValues('i-item'),
         breakthrough: getValues('b-item')
       };
-      
+
       if (entry.gratitude.length === 0 && entry.improvement.length === 0 && entry.breakthrough.length === 0) {
         alert('請至少填寫一項內容再儲存喔！');
         return;
       }
 
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      logs.unshift(entry); // 最新寫的排最前面
+      logs.unshift(entry);
       localStorage.setItem('my_journals', JSON.stringify(logs));
-      
-      // 清空輸入框
+
       document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
       alert('日記已成功儲存！今天你寫了 ' + entry.gratitude.length + ' 件感恩的事 ☃︎');
-      renderHistory();
     }
 
-    // 渲染歷史紀錄列表
-    function renderHistory() {
-      const container = document.getElementById('historyLogs');
+    // 生成日曆打卡
+    function renderCalendar() {
+      const daysContainer = document.getElementById('calendarDays');
+      const monthTitle = document.getElementById('calendarMonthTitle');
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      const loggedDates = new Set(logs.map(l => l.date));
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      monthTitle.innerText = `${year}年${month + 1}月`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = now.toISOString().split('T')[0];
+
+      let html = '';
+      for (let i = 0; i < firstDay; i++) { html += '<div></div>'; }
       
-      if (logs.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#8e8e93; font-size:14px;">目前還沒有歷史紀錄，寫下第一篇吧！</p>';
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasData = loggedDates.has(dateStr) ? 'has-data' : '';
+        const isToday = dateStr === todayStr ? 'is-today' : '';
+        html += `<div class="calendar-date ${hasData} ${isToday}">${day}</div>`;
+      }
+      daysContainer.innerHTML = html;
+    }
+
+    // 數據統計與關鍵詞
+    function renderStats() {
+      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      const uniqueDates = new Set(logs.map(l => l.date));
+      document.getElementById('totalDaysCount').innerText = uniqueDates.size;
+
+      // 提取所有文字生成簡單關鍵詞
+      let allText = [];
+      logs.forEach(l => {
+        allText.push(...l.gratitude, ...l.improvement, ...l.breakthrough);
+      });
+
+      const tagCloud = document.getElementById('tagCloud');
+      if (allText.length === 0) {
+        tagCloud.innerHTML = '<span class="tag">尚無數據，多寫幾篇日記吧！</span>';
         return;
       }
 
-      container.innerHTML = logs.map(log => `
-        <div class="journal-card">
-          <button class="delete-btn" onclick="deleteLog(${log.id})">🗑️ 刪除</button>
-          <div class="card-date">📅 ${log.date}</div>
-          ${log.gratitude.length ? `<div class="card-item">🟢 <b>感恩：</b>${log.gratitude.join(' / ')}</div>` : ''}
-          ${log.improvement.length ? `<div class="card-item">🟡 <b>改善：</b>${log.improvement.join(' / ')}</div>` : ''}
-          ${log.breakthrough.length ? `<div class="card-item">🔵 <b>突破：</b>${log.breakthrough.join(' / ')}</div>` : ''}
-        </div>
-      `).join('');
-    }
+      // 統計高頻出現的字句
+      let counts = {};
+      allText.forEach(text => { counts[text] = (counts[text] || 0) + 1; });
 
-    // 刪除單筆日記
-    function deleteLog(id) {
-      if (confirm('確定要刪除這篇日記嗎？')) {
-        let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-        logs = logs.filter(log => log.id !== id);
-        localStorage.setItem('my_journals', JSON.stringify(logs));
-        renderHistory();
-      }
+      tagCloud.innerHTML = Object.keys(counts).map(word => `<span class="tag">${word}</span>`).join('');
     }
 
     function exportData() {
