@@ -15,11 +15,18 @@
     button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 16px; cursor: pointer; margin-top: 8px; }
     .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 14px; margin-top: 0; margin-bottom: 12px; }
     
-    /* 478 呼吸：固定尺寸外框與正數顯示 */
+    /* 478 呼吸 */
     .breath-section { text-align: center; margin-bottom: 24px; padding: 20px; background: #eef6ff; border-radius: 16px; }
-    .circle { width: 130px; height: 130px; border: 6px solid #007aff; border-radius: 50%; margin: 16px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
-    .number-display { font-size: 42px; font-weight: bold; line-height: 1; }
+    .circle { width: 120px; height: 120px; border: 6px solid #007aff; border-radius: 50%; margin: 16px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
+    .number-display { font-size: 40px; font-weight: bold; line-height: 1; }
     .status-text { font-size: 14px; margin-top: 6px; color: #555; }
+
+    /* 歷史記錄卡片 */
+    .history-section { margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px; }
+    .journal-card { background: #f9f9fb; border: 1px solid #e5e5ea; border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative; }
+    .card-date { font-weight: bold; color: #007aff; margin-bottom: 8px; font-size: 14px; }
+    .card-item { font-size: 14px; color: #333; margin: 4px 0; }
+    .delete-btn { position: absolute; top: 12px; right: 12px; background: none; color: #ff3b30; border: none; font-size: 14px; padding: 0; width: auto; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -56,67 +63,46 @@
     </div>
     <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多突破...')">➕ 新增更多突破</button>
 
-    <button onclick="saveJournal()" style="background:#007aff; font-weight:bold; margin-top:20px;">儲存到手機本地</button>
+    <button onclick="saveJournal()" style="background:#007aff; font-weight:bold; margin-top:20px;">儲存到手機/電腦本地</button>
     <button onclick="exportData()" style="background:#34c759;">匯出 JSON 備份</button>
+
+    <!-- 歷史日記庫 -->
+    <div class="history-section">
+      <h2>📚 歷史日記庫</h2>
+      <div id="historyLogs"></div>
+    </div>
   </div>
 
   <script>
-    let isBreathing = false;
+    // 頁面載入時自動讀取歷史紀錄
+    document.addEventListener('DOMContentLoaded', renderHistory);
 
-    // 核心：從 1 開始正數的 478 邏輯
+    let isBreathing = false;
     function startBreathing() {
       if (isBreathing) return;
       isBreathing = true;
-      
       const numDisplay = document.getElementById('numDisplay');
       const statusText = document.getElementById('statusText');
       const btn = document.getElementById('startBtn');
-      
-      btn.innerText = "呼吸進行中...";
-      btn.style.opacity = "0.6";
+      btn.innerText = "呼吸進行中..."; btn.style.opacity = "0.6";
 
-      // 階段 1：吸氣 1 -> 4
-      let count = 1;
-      statusText.innerText = "1-4s 吸氣...";
-      numDisplay.innerText = count;
-
+      let count = 1; statusText.innerText = "1-4s 吸氣..."; numDisplay.innerText = count;
       let timer = setInterval(() => {
         count++;
-        if (count <= 4) {
-          numDisplay.innerText = count;
-        } else {
-          clearInterval(timer);
-          
-          // 階段 2：憋氣 1 -> 7
-          count = 1;
-          statusText.innerText = "1-7s 憋氣...";
-          numDisplay.innerText = count;
-
+        if (count <= 4) { numDisplay.innerText = count; } 
+        else {
+          clearInterval(timer); count = 1; statusText.innerText = "1-7s 憋氣..."; numDisplay.innerText = count;
           let holdTimer = setInterval(() => {
             count++;
-            if (count <= 7) {
-              numDisplay.innerText = count;
-            } else {
-              clearInterval(holdTimer);
-
-              // 階段 3：吐氣 1 -> 8
-              count = 1;
-              statusText.innerText = "1-8s 吐氣...";
-              numDisplay.innerText = count;
-
+            if (count <= 7) { numDisplay.innerText = count; } 
+            else {
+              clearInterval(holdTimer); count = 1; statusText.innerText = "1-8s 吐氣..."; numDisplay.innerText = count;
               let exhaleTimer = setInterval(() => {
                 count++;
-                if (count <= 8) {
-                  numDisplay.innerText = count;
-                } else {
-                  clearInterval(exhaleTimer);
-
-                  // 完成一次循環
-                  statusText.innerText = "完成放鬆";
-                  numDisplay.innerText = "☃︎";
-                  btn.innerText = "再做一次 4-7-8 呼吸";
-                  btn.style.opacity = "1";
-                  isBreathing = false;
+                if (count <= 8) { numDisplay.innerText = count; } 
+                else {
+                  clearInterval(exhaleTimer); statusText.innerText = "完成放鬆"; numDisplay.innerText = "☃︎";
+                  btn.innerText = "再做一次 4-7-8 呼吸"; btn.style.opacity = "1"; isBreathing = false;
                 }
               }, 1000);
             }
@@ -125,34 +111,70 @@
       }, 1000);
     }
 
-    // 動態新增輸入框
     function addBox(containerId, className, placeholderText) {
       const container = document.getElementById(containerId);
       const newInput = document.createElement('input');
-      newInput.type = 'text';
-      newInput.className = className;
-      newInput.placeholder = placeholderText;
+      newInput.type = 'text'; newInput.className = className; newInput.placeholder = placeholderText;
       container.appendChild(newInput);
     }
 
     // 儲存邏輯
     function saveJournal() {
       const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
-      
       const entry = {
-        date: new Date().toISOString().split('T')[0],
+        id: Date.now(),
+        date: new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }),
         gratitude: getValues('g-item'),
         improvement: getValues('i-item'),
         breakthrough: getValues('b-item')
       };
       
+      if (entry.gratitude.length === 0 && entry.improvement.length === 0 && entry.breakthrough.length === 0) {
+        alert('請至少填寫一項內容再儲存喔！');
+        return;
+      }
+
       let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      logs.push(entry);
+      logs.unshift(entry); // 最新寫的排最前面
       localStorage.setItem('my_journals', JSON.stringify(logs));
+      
+      // 清空輸入框
+      document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
       alert('日記已成功儲存！今天你寫了 ' + entry.gratitude.length + ' 件感恩的事 ☃︎');
+      renderHistory();
     }
 
-    // 匯出 JSON 備份
+    // 渲染歷史紀錄列表
+    function renderHistory() {
+      const container = document.getElementById('historyLogs');
+      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      
+      if (logs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#8e8e93; font-size:14px;">目前還沒有歷史紀錄，寫下第一篇吧！</p>';
+        return;
+      }
+
+      container.innerHTML = logs.map(log => `
+        <div class="journal-card">
+          <button class="delete-btn" onclick="deleteLog(${log.id})">🗑️ 刪除</button>
+          <div class="card-date">📅 ${log.date}</div>
+          ${log.gratitude.length ? `<div class="card-item">🟢 <b>感恩：</b>${log.gratitude.join(' / ')}</div>` : ''}
+          ${log.improvement.length ? `<div class="card-item">🟡 <b>改善：</b>${log.improvement.join(' / ')}</div>` : ''}
+          ${log.breakthrough.length ? `<div class="card-item">🔵 <b>突破：</b>${log.breakthrough.join(' / ')}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // 刪除單筆日記
+    function deleteLog(id) {
+      if (confirm('確定要刪除這篇日記嗎？')) {
+        let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+        logs = logs.filter(log => log.id !== id);
+        localStorage.setItem('my_journals', JSON.stringify(logs));
+        renderHistory();
+      }
+    }
+
     function exportData() {
       const data = localStorage.getItem('my_journals') || '[]';
       const blob = new Blob([data], { type: 'application/json' });
