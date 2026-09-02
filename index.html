@@ -6,8 +6,10 @@
   <title>321 離線日記 ☃︎</title>
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
   <link rel="icon" href="https://img.icons8.com/emoji/192/snowman-emoji.png">
-  <!-- 引入輕量級 QR Code 生成與掃描工具庫 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <!-- 替換成穩定支援中文與大資料量的 QR Code 生成庫 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- 相機掃描庫 -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
@@ -44,9 +46,9 @@
     /* 彈窗 Modal */
     .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; position: relative; }
+    .modal-content { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; position: relative; text-align: center; }
     .modal-close { position: absolute; top: 15px; right: 20px; font-size: 20px; border: none; background: none; cursor: pointer; color: #8e8e93; width: auto; padding: 0; }
-    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; }
+    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; text-align: left; }
     .modal-list li { font-size: 14px; color: #333; margin-bottom: 6px; padding-left: 12px; position: relative; }
     .modal-list li::before { content: "•"; position: absolute; left: 0; color: #8e8e93; }
 
@@ -56,8 +58,6 @@
     .nav-item.active { color: #ff7d00; font-weight: bold; }
     .nav-icon { font-size: 18px; margin-bottom: 2px; }
 
-    /* QR Code 顯示區域 */
-    #qrcode-container { display: flex; justify-content: center; margin: 15px 0; }
     #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-top: 10px; }
   </style>
 </head>
@@ -142,7 +142,6 @@
       <div class="card">
         <span class="section-title">💻 電腦發送端：生成資料 QR Code</span>
         <button onclick="generateQRCode()" style="background:#ff7d00;">產生同步 QR Code</button>
-        <div id="qrcode-container"></div>
       </div>
 
       <div class="card">
@@ -159,14 +158,11 @@
 
   </div>
 
-  <!-- 詳情彈窗 -->
+  <!-- 詳情 / QR Code 彈窗 -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()">✕</button>
-      <h3 id="modalDate" style="margin-top:0; color:#1d1d1f;">2026年9月1日</h3>
-      <span class="section-title">🟢 感恩的事</span><ul class="modal-list" id="modalGratitude"></ul>
-      <span class="section-title">🟡 NiceJob</span><ul class="modal-list" id="modalImprovement"></ul>
-      <span class="section-title">🔵 自我肯定</span><ul class="modal-list" id="modalBreakthrough"></ul>
+      <div id="modalBody"></div>
     </div>
   </div>
 
@@ -285,13 +281,16 @@
       const entry = logs.find(l => l.date === dateStr);
       if (!entry) return;
 
-      document.getElementById('modalDate').innerText = dateStr;
-      const renderList = (elId, items) => {
-        document.getElementById(elId).innerHTML = items.length ? items.map(i => `<li>${i}</li>`).join('') : '<li style="color:#aaa;">無紀錄</li>';
-      };
-      renderList('modalGratitude', entry.gratitude);
-      renderList('modalImprovement', entry.improvement);
-      renderList('modalBreakthrough', entry.breakthrough);
+      const formatList = (items) => items.length ? items.map(i => `<li>${i}</li>`).join('') : '<li style="color:#aaa;">無紀錄</li>';
+      
+      const html = `
+        <h3 style="margin-top:0; color:#1d1d1f; text-align:left;">${dateStr}</h3>
+        <span class="section-title" style="text-align:left;">🟢 感恩的事</span><ul class="modal-list">${formatList(entry.gratitude)}</ul>
+        <span class="section-title" style="text-align:left;">🟡 NiceJob</span><ul class="modal-list">${formatList(entry.improvement)}</ul>
+        <span class="section-title" style="text-align:left;">🔵 自我肯定</span><ul class="modal-list">${formatList(entry.breakthrough)}</ul>
+      `;
+      
+      document.getElementById('modalBody').innerHTML = html;
       document.getElementById('modalOverlay').classList.add('active');
     }
 
@@ -317,46 +316,59 @@
       tagCloud.innerHTML = sortedWords.length ? sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('') : '<span class="tag">寫多一點句子產生關鍵詞！</span>';
     }
 
-    /* 🌟 核心新功能：產生 QR Code (發送端) */
+    /* 🌟 修正後的 QR Code 彈窗產生函數 */
     function generateQRCode() {
-      const container = document.getElementById('qrcode-container');
-      container.innerHTML = ""; // 清空舊圖
-      
       const rawData = localStorage.getItem('my_journals') || '[]';
       if (rawData === '[]') {
         alert('目前沒有任何日記資料可以同步喔！');
         return;
       }
 
-      new QRCode(container, {
-        text: rawData,
-        width: 220,
-        height: 220
-      });
-      alert('已產生同步 QR Code！請拿手機打開同一個網頁，點「設定」->「開啟鏡頭掃描」即可！');
+      // 使用 Modal 視圖呈現 QR Code
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML = `
+        <h3 style="margin-top:0;">同步 QR Code</h3>
+        <p style="font-size:12px; color:#666; margin-bottom:15px;">請用手機瀏覽器打開雪人日記，點「開啟鏡頭掃描」對準此處：</p>
+        <canvas id="qrCanvas"></canvas>
+      `;
+
+      document.getElementById('modalOverlay').classList.add('active');
+
+      // 使用 QRious 精準繪製
+      setTimeout(() => {
+        try {
+          new QRious({
+            element: document.getElementById('qrCanvas'),
+            value: rawData,
+            size: 220,
+            level: 'L' // 低容錯率以支援放更多字數
+          });
+        } catch(e) {
+          modalBody.innerHTML += `<p style="color:red; font-size:12px;">資料量較大，建議使用 JSON 檔案匯出匯入方式同步！</p>`;
+        }
+      }, 100);
     }
 
-    /* 🌟 核心新功能：開啟相機掃描 (接收端) */
+    /* 相機掃描 */
     function startScanner() {
       const html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
         { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 200, height: 200 } },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
-          // 掃描成功後處理邏輯
           try {
             const parsedData = JSON.parse(decodedText);
             if (Array.isArray(parsedData)) {
               localStorage.setItem('my_journals', decodedText);
-              alert('🎉 同步成功！資料已成功寫入此裝置！');
+              alert('🎉 同步成功！資料已寫入！');
               html5QrCode.stop();
-              location.reload(); // 重新整理加載新資料
+              location.reload();
             }
           } catch(e) {
-            alert('掃描到的 QR Code 格式不正確喔！');
+            alert('掃描失敗，請確定掃描的是雪人日記產生的 QR Code！');
           }
         },
-        (errorMessage) => { /* 掃描中尋找訊號，忽略錯誤 */ }
+        (err) => {}
       ).catch(err => alert('無法開啟鏡頭，請確認有給予瀏覽器相機權限喔！'));
     }
 
