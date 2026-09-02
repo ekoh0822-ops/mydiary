@@ -22,7 +22,9 @@
     .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
     .card { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .section-title { font-weight: bold; margin-bottom: 8px; display: block; color: #007aff; font-size: 15px; }
-    input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; font-family: inherit; }
+    
+    textarea { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; font-family: inherit; resize: vertical; min-height: 42px; line-height: 1.4; }
+    
     button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 15px; font-weight: bold; cursor: pointer; }
     .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 13px; font-weight: normal; margin-bottom: 8px; }
 
@@ -41,11 +43,16 @@
     /* 彈窗 Modal */
     .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; position: relative; text-align: center; }
+    .modal-content { background: #fff; width: 90%; max-width: 420px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; position: relative; }
     .modal-close { position: absolute; top: 15px; right: 20px; font-size: 20px; border: none; background: none; cursor: pointer; color: #8e8e93; width: auto; padding: 0; }
-    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; text-align: left; }
-    .modal-list li { font-size: 14px; color: #333; margin-bottom: 6px; padding-left: 12px; position: relative; }
+    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; }
+    .modal-list li { font-size: 14px; color: #333; margin-bottom: 8px; padding-left: 12px; position: relative; white-space: pre-wrap; word-break: break-word; }
     .modal-list li::before { content: "•"; position: absolute; left: 0; color: #8e8e93; }
+
+    /* 單條紀錄編輯列 */
+    .edit-item-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .edit-item-row textarea { margin-bottom: 0; }
+    .del-item-btn { width: 36px; height: 42px; background: #ffeef0; color: #ff3b30; border: 1px solid #ffd1d5; border-radius: 8px; font-size: 14px; padding: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
     /* 底部分頁導覽列 */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #ffffff; border-top: 1px solid #e5e5ea; display: flex; justify-content: space-around; align-items: center; max-width: 450px; margin: 0 auto; }
@@ -73,22 +80,22 @@
       <div class="card">
         <span class="section-title">🟢 感恩的事：</span>
         <div id="gratitude-list">
-          <input type="text" class="g-item" placeholder="感恩 1...">
-          <input type="text" class="g-item" placeholder="感恩 2...">
-          <input type="text" class="g-item" placeholder="感恩 3...">
+          <textarea class="g-item" rows="1" placeholder="感恩 1..."></textarea>
+          <textarea class="g-item" rows="1" placeholder="感恩 2..."></textarea>
+          <textarea class="g-item" rows="1" placeholder="感恩 3..."></textarea>
         </div>
         <button class="add-btn" onclick="addBox('gratitude-list', 'g-item', '更多感恩...')">➕ 新增更多感恩</button>
 
         <span class="section-title">🟡 NiceJob：</span>
         <div id="improvement-list">
-          <input type="text" class="i-item" placeholder="NiceJob 1...">
-          <input type="text" class="i-item" placeholder="NiceJob 2...">
+          <textarea class="i-item" rows="1" placeholder="NiceJob 1..."></textarea>
+          <textarea class="i-item" rows="1" placeholder="NiceJob 2..."></textarea>
         </div>
         <button class="add-btn" onclick="addBox('improvement-list', 'i-item', '更多NiceJob...')">➕ 新增更多NiceJob</button>
 
         <span class="section-title">🔵 自我肯定：</span>
         <div id="breakthrough-list">
-          <input type="text" class="b-item" placeholder="自我肯定 1...">
+          <textarea class="b-item" rows="1" placeholder="自我肯定 1..."></textarea>
         </div>
         <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多自我肯定...')">➕ 新增更多自我肯定</button>
 
@@ -217,8 +224,8 @@
 
     function addBox(containerId, className, placeholderText) {
       const container = document.getElementById(containerId);
-      const newInput = document.createElement('input');
-      newInput.type = 'text'; newInput.className = className; newInput.placeholder = placeholderText;
+      const newInput = document.createElement('textarea');
+      newInput.className = className; newInput.rows = 1; newInput.placeholder = placeholderText;
       container.appendChild(newInput);
     }
 
@@ -243,7 +250,7 @@
       }
 
       localStorage.setItem('my_journals', JSON.stringify(logs));
-      document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+      document.querySelectorAll('textarea').forEach(i => { if(i.id !== 'importInput') i.value = ''; });
       alert('日記已成功儲存並合併到今天的紀錄中 ☃︎');
     }
 
@@ -279,14 +286,87 @@
       const formatList = (items) => items.length ? items.map(i => `<li>${i}</li>`).join('') : '<li style="color:#aaa;">無紀錄</li>';
       
       const html = `
-        <h3 style="margin-top:0; color:#1d1d1f; text-align:left;">${dateStr}</h3>
+        <h3 style="margin-top:0; color:#1d1d1f; text-align:left;">${dateStr} 的日記</h3>
         <span class="section-title" style="text-align:left;">🟢 感恩的事</span><ul class="modal-list">${formatList(entry.gratitude)}</ul>
         <span class="section-title" style="text-align:left;">🟡 NiceJob</span><ul class="modal-list">${formatList(entry.improvement)}</ul>
         <span class="section-title" style="text-align:left;">🔵 自我肯定</span><ul class="modal-list">${formatList(entry.breakthrough)}</ul>
+        
+        <button onclick="editJournal('${dateStr}')" style="background:#007aff; margin-top:10px;">✏️ 編輯 / 單條刪除紀錄</button>
       `;
       
       document.getElementById('modalBody').innerHTML = html;
       document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    /* ✏️ 進入單條獨立編輯介面 */
+    function editJournal(dateStr) {
+      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      const entry = logs.find(l => l.date === dateStr);
+      if (!entry) return;
+
+      const renderRows = (arr, cls) => {
+        return arr.map(item => `
+          <div class="edit-item-row">
+            <textarea class="${cls}" rows="1">${item}</textarea>
+            <button class="del-item-btn" onclick="this.parentElement.remove()">❌</button>
+          </div>
+        `).join('');
+      };
+
+      const html = `
+        <h3 style="margin-top:0; text-align:left;">✏️ 編輯 ${dateStr}</h3>
+        
+        <span class="section-title" style="text-align:left;">🟢 感恩的事：</span>
+        <div id="edit-g-container">${renderRows(entry.gratitude, 'edit-g')}</div>
+        <button class="add-btn" onclick="addEditRow('edit-g-container', 'edit-g')">➕ 追加感恩</button>
+
+        <span class="section-title" style="text-align:left;">🟡 NiceJob：</span>
+        <div id="edit-i-container">${renderRows(entry.improvement, 'edit-i')}</div>
+        <button class="add-btn" onclick="addEditRow('edit-i-container', 'edit-i')">➕ 追加NiceJob</button>
+
+        <span class="section-title" style="text-align:left;">🔵 自我肯定：</span>
+        <div id="edit-b-container">${renderRows(entry.breakthrough, 'edit-b')}</div>
+        <button class="add-btn" onclick="addEditRow('edit-b-container', 'edit-b')">➕ 追加自我肯定</button>
+
+        <button onclick="saveEdit('${dateStr}')" style="background:#007aff; margin-top:15px;">儲存變更</button>
+      `;
+
+      document.getElementById('modalBody').innerHTML = html;
+    }
+
+    function addEditRow(containerId, cls) {
+      const container = document.getElementById(containerId);
+      const div = document.createElement('div');
+      div.className = 'edit-item-row';
+      div.innerHTML = `<textarea class="${cls}" rows="1" placeholder="填寫內容..."></textarea><button class="del-item-btn" onclick="this.parentElement.remove()">❌</button>`;
+      container.appendChild(div);
+    }
+
+    /* 💾 儲存單條修改後的日記 */
+    function saveEdit(dateStr) {
+      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
+      let entryIndex = logs.findIndex(l => l.date === dateStr);
+      if (entryIndex === -1) return;
+
+      const getValues = (cls) => Array.from(document.querySelectorAll('.' + cls)).map(t => t.value.trim()).filter(v => v !== '');
+
+      const newG = getValues('edit-g');
+      const newI = getValues('edit-i');
+      const newB = getValues('edit-b');
+
+      // 如果全部都被刪光了，才把那天整個移除
+      if (newG.length === 0 && newI.length === 0 && newB.length === 0) {
+        logs.splice(entryIndex, 1);
+      } else {
+        logs[entryIndex].gratitude = newG;
+        logs[entryIndex].improvement = newI;
+        logs[entryIndex].breakthrough = newB;
+      }
+
+      localStorage.setItem('my_journals', JSON.stringify(logs));
+      alert('更新成功！☃︎');
+      closeModal();
+      renderCalendar();
     }
 
     function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
@@ -311,19 +391,17 @@
       tagCloud.innerHTML = sortedWords.length ? sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('') : '<span class="tag">寫多一點句子產生關鍵詞！</span>';
     }
 
-    /* 🌟 文字一鍵複製同步 */
     function copyDataText() {
       const data = localStorage.getItem('my_journals') || '[]';
       if (data === '[]') { alert('目前沒有日記可以複製喔！'); return; }
       
       navigator.clipboard.writeText(data).then(() => {
-        alert('📋 日記數據已複製到剪貼簿！你可以發到 LINE 或 Telegram 貼到手機上了！');
+        alert('📋 日記數據已複製！');
       }).catch(() => {
         prompt('請手動複製下方這段文字：', data);
       });
     }
 
-    /* 🌟 貼上文字匯入 */
     function importDataText() {
       const text = document.getElementById('importInput').value.trim();
       if (!text) { alert('請先貼上資料文字喔！'); return; }
@@ -335,14 +413,13 @@
           document.getElementById('importInput').value = '';
           location.reload();
         } else {
-          alert('格式不正確，請確認複製的是完整的日記文字。');
+          alert('格式不正確！');
         }
       } catch(e) {
-        alert('格式無效，無法解析貼上的文字。');
+        alert('格式無效！');
       }
     }
 
-    /* 📁 JSON 檔備份與匯入 */
     function exportData() {
       const data = localStorage.getItem('my_journals') || '[]';
       const blob = new Blob([data], { type: 'application/json' });
@@ -365,7 +442,7 @@
             location.reload();
           }
         } catch(err) {
-          alert('讀取失敗，請確認選擇的是有效的 JSON 備份檔案。');
+          alert('讀取失敗！');
         }
       };
       reader.readAsText(file);
