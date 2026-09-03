@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>321 離線日記 🌹</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>321 離線日記 🌹 v2.0</title>
   <link rel="icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="manifest" href="manifest.json">
@@ -81,7 +82,7 @@
 <body>
 
   <header>
-    <h1>321 離線日記 🌹</h1>
+    <h1>321 離線日記 🌹 v2.0</h1>
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
@@ -115,14 +116,14 @@
   </div>
 
   <!-- 歷史日記列表區 -->
-  <div class="history-title">📚 歷史日記列表 (點擊打開懸浮視窗)</div>
+  <div class="history-title">📚 歷史日記列表 (點擊開啟懸浮窗)</div>
   <div id="entryList" class="entry-list"></div>
 
   <!-- 懸浮彈窗 Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <div class="modal-header">
-        <span class="modal-title" id="modalDateTitle">📅 日記內文</span>
+        <span class="modal-title" id="modalDateTitle">📅 日記詳情</span>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
 
@@ -145,6 +146,13 @@
   </div>
 
   <script>
+    // 清除舊版 PWA ServiceWorker 快取干擾
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) { registration.unregister(); }
+      });
+    }
+
     document.getElementById('entryDate').valueAsDate = new Date();
 
     const GITHUB_USER = 'ekoh0822-ops';
@@ -173,19 +181,11 @@
       try {
         const data = localStorage.getItem('my_321_rose_journal');
         return data ? JSON.parse(data) : [];
-      } catch(e) {
-        console.error("本地讀取失敗，讀取備份:", e);
-        try {
-          const backup = localStorage.getItem('my_321_rose_journal_backup');
-          return backup ? JSON.parse(backup) : [];
-        } catch(err) { return []; }
-      }
+      } catch(e) { return []; }
     }
 
     function saveLocalEntries(entries) {
-      const str = JSON.stringify(entries);
-      localStorage.setItem('my_321_rose_journal', str);
-      localStorage.setItem('my_321_rose_journal_backup', str);
+      localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
     }
 
     async function syncFromCloud() {
@@ -205,8 +205,6 @@
 
         const data = await res.json();
         currentSha = data.sha;
-        
-        // 使用 Safe UTF-8 Base64 解碼
         const jsonStr = decodeURIComponent(escape(atob(data.content)));
         const cloudEntries = JSON.parse(jsonStr);
         
@@ -222,7 +220,6 @@
         renderEntries(finalEntries);
         status.innerText = '✅ 已與雲端同步';
       } catch (err) {
-        console.error(err);
         status.innerText = '❌ 同步失敗 (顯示本地資料)';
       }
     }
@@ -256,7 +253,6 @@
       }
     }
 
-    // 渲染歷史列表（安全轉譯預覽文字）
     function renderEntries(entries) {
       const container = document.getElementById('entryList');
       if (!entries || entries.length === 0) {
@@ -265,7 +261,6 @@
       }
       
       const sorted = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
-      
       let html = '';
       sorted.forEach(item => {
         const id = String(item.id || item.date);
@@ -282,7 +277,6 @@
       container.innerHTML = html;
     }
 
-    // 新增日記
     async function saveEntry() {
       const date = document.getElementById('entryDate').value;
       const gratitude = document.getElementById('gratitude').value.trim();
@@ -316,14 +310,13 @@
       await saveToCloud(entries);
     }
 
-    // --- 懸浮視窗 Modal 操作邏輯 ---
     function openModal(id) {
       const entries = getLocalEntries();
       const target = entries.find(e => String(e.id || e.date) === String(id));
       if (!target) return;
 
       document.getElementById('modalEntryId').value = String(target.id || target.date);
-      document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記`;
+      document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記詳情`;
       document.getElementById('modalGratitude').value = target.gratitude || '';
       document.getElementById('modalProgress').value = target.progress || '';
       document.getElementById('modalAffirmation').value = target.affirmation || '';
@@ -368,7 +361,6 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    // 呼吸功能控制
     let breathTimer = null, isBreathing = false;
     function toggleBreath() {
       const circle = document.getElementById('breathCircle');
