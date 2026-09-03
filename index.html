@@ -2,525 +2,462 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>321 離線日記 ☃︎</title>
-<link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
-<link rel="icon" type="image/png" sizes="512x512" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
-<link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>321 離線日記 🌹</title>
+  <link rel="icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
+  <link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
+  <link rel="manifest" href="manifest.json">
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f7f8fa; color: #1d1d1f; margin: 0; padding: 0 0 70px 0; }
-    .container { max-width: 450px; margin: 0 auto; padding: 20px; }
-    h2 { font-size: 22px; color: #1a1a1a; margin-top: 10px; margin-bottom: 4px; }
-    .subtitle { font-size: 13px; color: #8e8e93; margin-bottom: 20px; display: block; }
-    
-    .page { display: none; }
-    .page.active { display: block; }
+    :root {
+      --bg-color: #f7f8fa;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-sub: #7f8c8d;
+      --accent: #3498db;
+      --border-color: #e2e8f0;
+    }
 
-    .sync-status { font-size: 12px; color: #34c759; background: #e8f9ed; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 15px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
 
-    .breath-section { text-align: center; margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .circle { width: 100px; height: 100px; border: 5px solid #007aff; border-radius: 50%; margin: 12px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #007aff; background: #ffffff; }
-    .card { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .section-title { font-weight: bold; margin-bottom: 8px; display: block; color: #007aff; font-size: 15px; }
-    
-    textarea, input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e5ea; border-radius: 8px; font-size: 14px; background: #fafafa; font-family: inherit; }
-    textarea { resize: vertical; min-height: 42px; line-height: 1.4; }
-    
-    button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #007aff; color: white; font-size: 15px; font-weight: bold; cursor: pointer; }
-    .add-btn { background: #eef6ff; color: #007aff; border: 1px dashed #007aff; padding: 6px; font-size: 13px; font-weight: normal; margin-bottom: 8px; }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+    }
+    .token-settings {
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
-    .calendar-card { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; }
-    .calendar-day-head { font-size: 12px; color: #8e8e93; padding-bottom: 6px; }
-    .calendar-date { font-size: 14px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; }
-    .calendar-date.has-data { background: #ff7d00; color: white; font-weight: bold; }
-    .calendar-date.is-today { border: 2px solid #ff7d00; }
-    .stat-box { background: #2f80ed; color: white; padding: 20px; border-radius: 16px; margin-bottom: 16px; }
-    .stat-number { font-size: 36px; font-weight: bold; }
-    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: #fff3e0; color: #d97706; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+    /* 478 呼吸靜態圓圈區塊 */
+    .breath-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .breath-btn {
+      background: linear-gradient(135deg, #3498db, #2ecc71);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .breath-circle-container {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+    }
+    .breath-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(52, 152, 219, 0.15);
+      border: 2px solid #3498db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #2980b9;
+    }
+    .breath-status {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      margin-top: 8px;
+      min-height: 24px;
+    }
 
-    .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-overlay.active { display: flex; }
-    .modal-content { background: #fff; width: 90%; max-width: 420px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; position: relative; }
-    .modal-close { position: absolute; top: 15px; right: 20px; font-size: 20px; border: none; background: none; cursor: pointer; color: #8e8e93; width: auto; padding: 0; }
-    .modal-list { list-style: none; padding-left: 0; margin: 8px 0 16px 0; }
-    .modal-list li { font-size: 14px; color: #333; margin-bottom: 8px; padding-left: 12px; position: relative; white-space: pre-wrap; word-break: break-word; }
-    .modal-list li::before { content: "•"; position: absolute; left: 0; color: #8e8e93; }
+    /* 321 編輯區塊 */
+    .editor-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+    .date-picker {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 12px;
+      color: var(--text-main);
+      background: var(--bg-color);
+    }
+    .section-label {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 12px 0 6px 0;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 10px;
+      outline: none;
+      resize: vertical;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-main);
+      font-family: inherit;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .sync-status {
+      font-size: 0.82rem;
+      color: var(--text-sub);
+    }
+    .save-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 22px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
 
-    .edit-item-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
-    .edit-item-row textarea { margin-bottom: 0; }
-    .del-item-btn { width: 36px; height: 42px; background: #ffeef0; color: #ff3b30; border: 1px solid #ffd1d5; border-radius: 8px; font-size: 14px; padding: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #ffffff; border-top: 1px solid #e5e5ea; display: flex; justify-content: space-around; align-items: center; max-width: 450px; margin: 0 auto; }
-    .nav-item { border: none; background: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; padding: 0; width: auto; }
-    .nav-item.active { color: #ff7d00; font-weight: bold; }
-    .nav-icon { font-size: 18px; margin-bottom: 2px; }
+    /* 歷史紀錄列表 */
+    .entry-list { display: flex; flex-direction: column; gap: 12px; }
+    .entry-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+    .entry-date {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .entry-section { margin-bottom: 8px; font-size: 0.95rem; white-space: pre-wrap; }
+    .entry-tag { font-weight: bold; color: var(--accent); }
+    .delete-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      color: #e74c3c;
+      border: none;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .empty-tip {
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 0.9rem;
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <header>
+    <h1>321 離線日記 🌹</h1>
+    <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
+  </header>
+
+  <!-- 478 呼吸卡片 (靜態圓圈 + 正數) -->
+  <div class="breath-card">
+    <button class="breath-btn" id="breathBtn" onclick="toggleBreath()">🫁 開始 4-7-8 呼吸放鬆</button>
+    <div class="breath-circle-container">
+      <div class="breath-circle" id="breathCircle">準備</div>
+    </div>
+    <div class="breath-status" id="breathStatus">點擊按鈕開始放鬆</div>
+  </div>
+
+  <!-- 321 日記編輯卡片 -->
+  <div class="editor-card">
+    <input type="date" id="entryDate" class="date-picker">
     
-    <!-- 分頁 1：首頁 (寫日記) -->
-    <div id="page-home" class="page active">
-      <h2>478 呼吸放鬆</h2>
-      <div class="breath-section">
-        <div class="circle">
-          <span id="numDisplay" style="font-size:32px; font-weight:bold;">478</span>
-          <span id="statusText" style="font-size:12px;">準備</span>
-        </div>
-        <button id="startBtn" onclick="startBreathing()">開始 4-7-8 呼吸</button>
-      </div>
+    <div class="section-label">✨ 三件感恩的事</div>
+    <textarea id="gratitude" placeholder="1. &#10;2. &#10;3. "></textarea>
 
-      <h2>321 離線日記 ☃︎</h2>
-      <div id="cloudStatus" class="sync-status">☁️ 雲端狀態：檢查中...</div>
+    <div class="section-label">🌿 兩件做得好的事</div>
+    <textarea id="progress" placeholder="1. &#10;2. "></textarea>
 
-      <div class="card">
-        <span class="section-title">🟢 感恩的事：</span>
-        <div id="gratitude-list">
-          <textarea class="g-item" rows="1" placeholder="感恩 1..."></textarea>
-          <textarea class="g-item" rows="1" placeholder="感恩 2..."></textarea>
-          <textarea class="g-item" rows="1" placeholder="感恩 3..."></textarea>
-        </div>
-        <button class="add-btn" onclick="addBox('gratitude-list', 'g-item', '更多感恩...')">➕ 新增更多感恩</button>
+    <div class="section-label">💡 一句自我肯定</div>
+    <textarea id="affirmation" placeholder="1. "></textarea>
 
-        <span class="section-title">🟡 NiceJob：</span>
-        <div id="improvement-list">
-          <textarea class="i-item" rows="1" placeholder="NiceJob 1..."></textarea>
-          <textarea class="i-item" rows="1" placeholder="NiceJob 2..."></textarea>
-        </div>
-        <button class="add-btn" onclick="addBox('improvement-list', 'i-item', '更多NiceJob...')">➕ 新增更多NiceJob</button>
-
-        <span class="section-title">🔵 自我肯定：</span>
-        <div id="breakthrough-list">
-          <textarea class="b-item" rows="1" placeholder="自我肯定 1..."></textarea>
-        </div>
-        <button class="add-btn" onclick="addBox('breakthrough-list', 'b-item', '更多自我肯定...')">➕ 新增更多自我肯定</button>
-
-        <button onclick="saveJournal()" style="background:#007aff; margin-top:12px;">儲存並同步到雲端</button>
-      </div>
-    </div>
-
-    <!-- 分頁 2：日曆 -->
-    <div id="page-calendar" class="page">
-      <h2>日曆回顧</h2>
-      <span class="subtitle">查看 your 心情歷程</span>
-      <div class="calendar-card">
-        <div style="text-align:center; font-weight:bold; margin-bottom:12px;" id="calendarMonthTitle"></div>
-        <div class="calendar-grid">
-          <div class="calendar-day-head">日</div><div class="calendar-day-head">一</div><div class="calendar-day-head">二</div>
-          <div class="calendar-day-head">三</div><div class="calendar-day-head">四</div><div class="calendar-day-head">五</div><div class="calendar-day-head">六</div>
-        </div>
-        <div class="calendar-grid" id="calendarDays"></div>
-      </div>
-    </div>
-
-    <!-- 分頁 3：統計 -->
-    <div id="page-stats" class="page">
-      <h2>數據統計</h2>
-      <span class="subtitle">看看你的成長軌跡</span>
-      <div class="stat-box">
-        <div style="font-size:14px; opacity:0.9;">📅 累計記錄天數</div>
-        <div class="stat-number" id="totalDaysCount">0</div>
-      </div>
-      
-      <div class="card">
-        <span class="section-title" style="color:#1d1d1f;">常見關鍵詞</span>
-        <div class="tag-cloud" id="tagCloud">
-          <span class="tag">尚無數據，多寫幾篇日記吧！</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 分頁 4：設定與資料同步 -->
-    <div id="page-settings" class="page">
-      <h2>資料傳輸與同步 ☃︎</h2>
-      <span class="subtitle">GitHub 私密雲端設定</span>
-
-      <div class="card">
-        <span class="section-title">🔑 設定 Token 密鑰</span>
-        <input type="password" id="userTokenInput" placeholder="請貼上你的 ghp_ 通行碼">
-        <button onclick="saveToken()" style="background:#34c759; margin-bottom:8px;">綁定並儲存 Token</button>
-      </div>
-      
-      <div class="card">
-        <span class="section-title">☁️ 雲端手動強制同步</span>
-        <button onclick="syncFromCloud(true)" style="background:#007aff; margin-bottom:8px;">拉取雲端最新資料</button>
-        <button onclick="syncToCloud()" style="background:#ff7d00;">推送到雲端倉庫</button>
-      </div>
-
-      <div class="card">
-        <span class="section-title">📁 手動檔案備份與還原</span>
-        <button onclick="exportData()" style="background:#34c759; margin-bottom:8px;">匯出 JSON 備份檔</button>
-        <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSONFile(event)">
-        <button onclick="document.getElementById('jsonFileInput').click()" style="background:#8e8e93;">選擇 JSON 檔匯入</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- 詳情彈窗 -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <div id="modalBody"></div>
+    <div class="btn-group">
+      <span class="sync-status" id="syncStatus">就緒</span>
+      <button class="save-btn" onclick="saveEntry()">儲存並同步</button>
     </div>
   </div>
 
-  <!-- 底部分頁列 -->
-  <div class="bottom-nav">
-    <button class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">🏠</span>首頁</button>
-    <button class="nav-item" onclick="switchPage('calendar', this)"><span class="nav-icon">📅</span>日曆</button>
-    <button class="nav-item" onclick="switchPage('stats', this)"><span class="nav-icon">📊</span>統計</button>
-    <button class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span>設定</button>
-  </div>
+  <div id="entryList" class="entry-list"></div>
 
   <script>
-    const GITHUB_USERNAME = "ekoh0822-ops";
-    const REPO_NAME = "my-journal-data";
-    const FILE_PATH = "journal.json";
+    document.getElementById('entryDate').valueAsDate = new Date();
+
+    // --- GitHub API 雲端同步邏輯 ---
+    const GITHUB_USER = 'ekoh0822-ops';
+    const GITHUB_REPO = 'my-journal-data';
+    const FILE_PATH = 'journal.json';
+    let currentSha = '';
 
     function getToken() {
-      return localStorage.getItem('user_gh_token') || "";
+      return localStorage.getItem('github_pwa_token');
     }
 
-    function saveToken() {
-      const token = document.getElementById('userTokenInput').value.trim();
-      if (!token) { alert('請輸入有效的 Token！'); return; }
-      localStorage.setItem('user_gh_token', token);
-      alert('🔑 Token 綁定成功！');
-      syncFromCloud(true);
-    }
-
-    window.onload = function() {
-      const savedToken = getToken();
-      if (savedToken) {
-        document.getElementById('userTokenInput').value = savedToken;
+    function setupToken() {
+      const token = prompt('請輸入 GitHub Personal Access Token:', getToken() || '');
+      if (token !== null) {
+        localStorage.setItem('github_pwa_token', token.trim());
+        alert('Token 已儲存！');
         syncFromCloud();
-      } else {
-        const statusTag = document.getElementById('cloudStatus');
-        statusTag.innerText = "🔑 請先至『設定』分頁輸入並綁定 Token";
-        statusTag.style.background = "#fff3e0"; statusTag.style.color = "#d97706";
       }
-    };
+    }
 
-    async function syncFromCloud(isManual = false) {
+    async function syncFromCloud() {
       const token = getToken();
-      const statusTag = document.getElementById('cloudStatus');
+      const status = document.getElementById('syncStatus');
       if (!token) {
-        if (isManual) alert("請先在『設定』頁面輸入並儲存你的 Token！");
+        status.innerText = '⚠️ 未綁定 Token';
+        renderEntries(getLocalEntries());
         return;
       }
 
-      statusTag.innerText = "☁️ 雲端同步中..."; statusTag.style.background = "#eef6ff"; statusTag.style.color = "#007aff";
-
+      status.innerText = '☁️ 雲端同步中...';
       try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`, {
-          headers: { "Authorization": `token ${token}` }
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+          headers: { 'Authorization': `token ${token}` }
         });
 
-        if (res.status === 200) {
-          const data = await res.json();
-          const content = decodeURIComponent(escape(atob(data.content)));
-          localStorage.setItem('my_journals', content);
-          localStorage.setItem('gh_sha', data.sha);
-          
-          statusTag.innerText = "☁️ 雲端同步已連線"; statusTag.style.background = "#e8f9ed"; statusTag.style.color = "#34c759";
-          if (isManual) alert("🎉 已成功拉取雲端最新日記！");
-          renderCalendar(); renderStats();
-        } else if (res.status === 404) {
-          statusTag.innerText = "☁️ 雲端尚未建立檔案（首次儲存後自動建立）";
-        } else {
-          statusTag.innerText = "❌ Token 無效或權限不足"; statusTag.style.background = "#ffeef0"; statusTag.style.color = "#ff3b30";
-          if (isManual) alert("同步失敗，請檢查 Token 是否正確！");
+        if (res.status === 404) {
+          status.innerText = '☁️ 雲端無檔案，準備建立';
+          return;
         }
-      } catch (e) {
-        statusTag.innerText = "☁️ 離線模式（無法連接雲端）"; statusTag.style.background = "#fff3e0"; statusTag.style.color = "#d97706";
+
+        const data = await res.json();
+        currentSha = data.sha;
+        const content = decodeURIComponent(escape(atob(data.content)));
+        const cloudEntries = JSON.parse(content);
+
+        localStorage.setItem('my_321_rose_journal', JSON.stringify(cloudEntries));
+        renderEntries(cloudEntries);
+        status.innerText = '✅ 已與雲端同步';
+      } catch (err) {
+        console.error(err);
+        status.innerText = '❌ 同步失敗 (使用本地數據)';
+        renderEntries(getLocalEntries());
       }
     }
 
-    async function syncToCloud() {
+    async function saveToCloud(entries) {
       const token = getToken();
-      if (!token) { alert("請先至『設定』分頁輸入並綁定你的 Token！"); return; }
+      const status = document.getElementById('syncStatus');
+      if (!token) {
+        alert('未綁定 Token，資料僅儲存於本機！');
+        return;
+      }
 
-      const statusTag = document.getElementById('cloudStatus');
-      statusTag.innerText = "☁️ 正在備份至雲端...";
-      
-      const localData = localStorage.getItem('my_journals') || '[]';
-      const sha = localStorage.getItem('gh_sha');
-      const contentEncoded = btoa(unescape(encodeURIComponent(localData)));
-
-      const body = {
-        message: "auto sync journal",
-        content: contentEncoded,
-        sha: sha || undefined
-      };
-
+      status.innerText = '☁️ 正在上傳雲端...';
       try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`, {
-          method: "PUT",
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(entries, null, 2))));
+        const bodyData = {
+          message: 'Update journal entries via 🌹 PWA',
+          content: content
+        };
+        if (currentSha) bodyData.sha = currentSha;
+
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+          method: 'PUT',
           headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify(body)
+          body: JSON.stringify(bodyData)
         });
-        
+
+        const resData = await res.json();
         if (res.ok) {
-          const resData = await res.json();
-          localStorage.setItem('gh_sha', resData.content.sha);
-          statusTag.innerText = "☁️ 雲端同步成功！"; statusTag.style.background = "#e8f9ed"; statusTag.style.color = "#34c759";
-          alert("☁️ 雲端同步成功！");
+          currentSha = resData.content.sha;
+          status.innerText = '✅ 雲端同步成功';
         } else {
-          alert("雲端同步失敗，請檢查 Token 是否正確。");
+          throw new Error(resData.message);
         }
-      } catch (e) {
-        alert("目前處於離線狀態，已先儲存在本機。");
+      } catch (err) {
+        alert('雲端儲存失敗：' + err.message);
+        status.innerText = '❌ 同步失敗';
       }
     }
 
-    function switchPage(pageId, btn) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      document.getElementById('page-' + pageId).classList.add('active');
-      btn.classList.add('active');
-
-      if (pageId === 'calendar') renderCalendar();
-      if (pageId === 'stats') renderStats();
-    }
-
+    // --- 478 呼吸邏輯 (正數，圓圈不動) ---
+    let breathTimer = null;
     let isBreathing = false;
-    function startBreathing() {
-      if (isBreathing) return;
+
+    function toggleBreath() {
+      const btn = document.getElementById('breathBtn');
+      const circle = document.getElementById('breathCircle');
+      const status = document.getElementById('breathStatus');
+      
+      if (isBreathing) {
+        clearInterval(breathTimer);
+        isBreathing = false;
+        btn.innerText = "🫁 開始 4-7-8 呼吸放鬆";
+        circle.innerText = "準備";
+        status.innerText = "放鬆結束，保持好心情！";
+        return;
+      }
+
       isBreathing = true;
-      const numDisplay = document.getElementById('numDisplay');
-      const statusText = document.getElementById('statusText');
-      const btn = document.getElementById('startBtn');
-      btn.innerText = "呼吸進行中..."; btn.style.opacity = "0.6";
+      btn.innerText = "⏹ 結束呼吸放鬆";
+      startBreathCycle();
+    }
 
-      let count = 1; statusText.innerText = "1-4s 吸氣..."; numDisplay.innerText = count;
-      let timer = setInterval(() => {
-        count++;
-        if (count <= 4) { numDisplay.innerText = count; } 
-        else {
-          clearInterval(timer); count = 1; statusText.innerText = "1-7s 憋氣..."; numDisplay.innerText = count;
-          let holdTimer = setInterval(() => {
-            count++;
-            if (count <= 7) { numDisplay.innerText = count; } 
-            else {
-              clearInterval(holdTimer); count = 1; statusText.innerText = "1-8s 吐氣..."; numDisplay.innerText = count;
-              let exhaleTimer = setInterval(() => {
-                count++;
-                if (count <= 8) { numDisplay.innerText = count; } 
-                else {
-                  clearInterval(exhaleTimer); statusText.innerText = "完成放鬆"; numDisplay.innerText = "☃︎";
-                  btn.innerText = "再做一次 4-7-8 呼吸"; btn.style.opacity = "1"; isBreathing = false;
-                }
-              }, 1000);
-            }
-          }, 1000);
+    function startBreathCycle() {
+      const circle = document.getElementById('breathCircle');
+      const status = document.getElementById('breathStatus');
+
+      let phases = [
+        { name: "吸氣 🫁", duration: 4 },
+        { name: "憋氣 ⏸", duration: 7 },
+        { name: "呼氣 🌬", duration: 8 }
+      ];
+
+      let phaseIdx = 0;
+      let count = 1;
+
+      function tick() {
+        let current = phases[phaseIdx];
+        circle.innerText = count;
+        status.innerText = `${current.name} (${count} / ${current.duration} 秒)`;
+
+        if (count >= current.duration) {
+          phaseIdx = (phaseIdx + 1) % phases.length;
+          count = 1;
+        } else {
+          count++;
         }
-      }, 1000);
-    }
-
-    function addBox(containerId, className, placeholderText) {
-      const container = document.getElementById(containerId);
-      const newInput = document.createElement('textarea');
-      newInput.className = className; newInput.rows = 1; newInput.placeholder = placeholderText;
-      container.appendChild(newInput);
-    }
-
-    async function saveJournal() {
-      const getValues = (className) => Array.from(document.querySelectorAll('.' + className)).map(i => i.value).filter(v => v.trim() !== '');
-      const today = new Date().toISOString().split('T')[0];
-      const newGratitude = getValues('g-item'), newImprovement = getValues('i-item'), newBreakthrough = getValues('b-item');
-
-      if (newGratitude.length === 0 && newImprovement.length === 0 && newBreakthrough.length === 0) {
-        alert('請至少填寫一項內容再儲存喔！'); return;
       }
 
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      let existingEntry = logs.find(l => l.date === today);
+      tick();
+      breathTimer = setInterval(tick, 1000);
+    }
 
-      if (existingEntry) {
-        existingEntry.gratitude.push(...newGratitude);
-        existingEntry.improvement.push(...newImprovement);
-        existingEntry.breakthrough.push(...newBreakthrough);
-      } else {
-        logs.unshift({ id: Date.now(), date: today, gratitude: newGratitude, improvement: newImprovement, breakthrough: newBreakthrough });
+    // --- 日記資料讀寫邏輯 ---
+    function getLocalEntries() {
+      const data = localStorage.getItem('my_321_rose_journal');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function renderEntries(entries) {
+      const container = document.getElementById('entryList');
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty-tip">目前還沒有日記，寫下第一篇吧！</div>';
+        return;
       }
 
-      localStorage.setItem('my_journals', JSON.stringify(logs));
-      document.querySelectorAll('textarea').forEach(i => { if(i.id !== 'importInput') i.value = ''; });
-      
-      alert('日記已成功儲存！正在同步至私密雲端... ☃︎');
-      await syncToCloud();
+      entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      container.innerHTML = entries.map(item => `
+        <div class="entry-card">
+          <div class="entry-date">${item.date}</div>
+          ${item.gratitude ? `<div class="entry-section"><span class="entry-tag">✨ 三件感恩的事：</span><br>${escapeHtml(item.gratitude)}</div>` : ''}
+          ${item.progress ? `<div class="entry-section"><span class="entry-tag">🌿 兩件做得好的事：</span><br>${escapeHtml(item.progress)}</div>` : ''}
+          ${item.affirmation ? `<div class="entry-section"><span class="entry-tag">💡 一句自我肯定：</span><br>${escapeHtml(item.affirmation)}</div>` : ''}
+          <button class="delete-btn" onclick="deleteEntry('${item.id}')">刪除</button>
+        </div>
+      `).join('');
     }
 
-    function renderCalendar() {
-      const daysContainer = document.getElementById('calendarDays');
-      const monthTitle = document.getElementById('calendarMonthTitle');
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      const logMap = {}; logs.forEach(l => logMap[l.date] = l);
+    async function saveEntry() {
+      const date = document.getElementById('entryDate').value;
+      const gratitude = document.getElementById('gratitude').value.trim();
+      const progress = document.getElementById('progress').value.trim();
+      const affirmation = document.getElementById('affirmation').value.trim();
 
-      const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
-      monthTitle.innerText = `${year}年${month + 1}月`;
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const todayStr = now.toISOString().split('T')[0];
-
-      let html = '';
-      for (let i = 0; i < firstDay; i++) { html += '<div></div>'; }
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const hasData = logMap[dateStr] ? 'has-data' : '';
-        const isToday = dateStr === todayStr ? 'is-today' : '';
-        html += `<div class="calendar-date ${hasData} ${isToday}" onclick="openModal('${dateStr}')">${day}</div>`;
+      if (!date || (!gratitude && !progress && !affirmation)) {
+        alert('請至少填寫一個欄位！');
+        return;
       }
-      daysContainer.innerHTML = html;
-    }
 
-    function openModal(dateStr) {
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      const entry = logs.find(l => l.date === dateStr);
-      if (!entry) return;
-
-      const formatList = (items) => items.length ? items.map(i => `<li>${i}</li>`).join('') : '<li style="color:#aaa;">無紀錄</li>';
-      
-      const html = `
-        <h3 style="margin-top:0; color:#1d1d1f; text-align:left;">${dateStr} 的日記</h3>
-        <span class="section-title" style="text-align:left;">🟢 感恩的事</span><ul class="modal-list">${formatList(entry.gratitude)}</ul>
-        <span class="section-title" style="text-align:left;">🟡 NiceJob</span><ul class="modal-list">${formatList(entry.improvement)}</ul>
-        <span class="section-title" style="text-align:left;">🔵 自我肯定</span><ul class="modal-list">${formatList(entry.breakthrough)}</ul>
-        
-        <button onclick="editJournal('${dateStr}')" style="background:#007aff; margin-top:10px;">✏️ 編輯 / 單條刪除紀錄</button>
-      `;
-      
-      document.getElementById('modalBody').innerHTML = html;
-      document.getElementById('modalOverlay').classList.add('active');
-    }
-
-    function editJournal(dateStr) {
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      const entry = logs.find(l => l.date === dateStr);
-      if (!entry) return;
-
-      const renderRows = (arr, cls) => {
-        return arr.map(item => `
-          <div class="edit-item-row">
-            <textarea class="${cls}" rows="1">${item}</textarea>
-            <button class="del-item-btn" onclick="this.parentElement.remove()">❌</button>
-          </div>
-        `).join('');
+      const entries = getLocalEntries();
+      const newEntry = {
+        id: Date.now().toString(),
+        date: date,
+        gratitude: gratitude,
+        progress: progress,
+        affirmation: affirmation
       };
 
-      const html = `
-        <h3 style="margin-top:0; text-align:left;">✏️ 編輯 ${dateStr}</h3>
-        
-        <span class="section-title" style="text-align:left;">🟢 感恩的事：</span>
-        <div id="edit-g-container">${renderRows(entry.gratitude, 'edit-g')}</div>
-        <button class="add-btn" onclick="addEditRow('edit-g-container', 'edit-g')">➕ 追加感恩</button>
+      entries.push(newEntry);
+      localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
 
-        <span class="section-title" style="text-align:left;">🟡 NiceJob：</span>
-        <div id="edit-i-container">${renderRows(entry.improvement, 'edit-i')}</div>
-        <button class="add-btn" onclick="addEditRow('edit-i-container', 'edit-i')">➕ 追加NiceJob</button>
+      document.getElementById('gratitude').value = '';
+      document.getElementById('progress').value = '';
+      document.getElementById('affirmation').value = '';
+      renderEntries(entries);
 
-        <span class="section-title" style="text-align:left;">🔵 自我肯定：</span>
-        <div id="edit-b-container">${renderRows(entry.breakthrough, 'edit-b')}</div>
-        <button class="add-btn" onclick="addEditRow('edit-b-container', 'edit-b')">➕ 追加自我肯定</button>
-
-        <button onclick="saveEdit('${dateStr}')" style="background:#007aff; margin-top:15px;">儲存變更並同步</button>
-      `;
-
-      document.getElementById('modalBody').innerHTML = html;
+      await saveToCloud(entries);
     }
 
-    function addEditRow(containerId, cls) {
-      const container = document.getElementById(containerId);
-      const div = document.createElement('div');
-      div.className = 'edit-item-row';
-      div.innerHTML = `<textarea class="${cls}" rows="1" placeholder="填寫內容..."></textarea><button class="del-item-btn" onclick="this.parentElement.remove()">❌</button>`;
-      container.appendChild(div);
+    async function deleteEntry(id) {
+      if (!confirm('確定要刪除這篇日記嗎？')) return;
+      let entries = getLocalEntries();
+      entries = entries.filter(e => e.id !== id);
+      localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+      renderEntries(entries);
+
+      await saveToCloud(entries);
     }
 
-    async function saveEdit(dateStr) {
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      let entryIndex = logs.findIndex(l => l.date === dateStr);
-      if (entryIndex === -1) return;
-
-      const getValues = (cls) => Array.from(document.querySelectorAll('.' + cls)).map(t => t.value.trim()).filter(v => v !== '');
-
-      const newG = getValues('edit-g');
-      const newI = getValues('edit-i');
-      const newB = getValues('edit-b');
-
-      if (newG.length === 0 && newI.length === 0 && newB.length === 0) {
-        logs.splice(entryIndex, 1);
-      } else {
-        logs[entryIndex].gratitude = newG;
-        logs[entryIndex].improvement = newI;
-        logs[entryIndex].breakthrough = newB;
-      }
-
-      localStorage.setItem('my_journals', JSON.stringify(logs));
-      closeModal();
-      renderCalendar();
-      await syncToCloud();
-    }
-
-    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-
-    function renderStats() {
-      let logs = JSON.parse(localStorage.getItem('my_journals') || '[]');
-      document.getElementById('totalDaysCount').innerText = logs.length;
-      let rawTexts = []; logs.forEach(l => rawTexts.push(...l.gratitude, ...l.improvement, ...l.breakthrough));
-      const tagCloud = document.getElementById('tagCloud');
-      if (rawTexts.length === 0) { tagCloud.innerHTML = '<span class="tag">尚無數據</span>'; return; }
-
-      const stopWords = ["今天", "我", "了", "很", "非常", "的", "在", "是", "也", "有", "好", "完成", "寫了"];
-      let wordCounts = {};
-      rawTexts.forEach(sentence => {
-        let cleanSentence = sentence.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()！，。？]/g, "");
-        stopWords.forEach(sw => { cleanSentence = cleanSentence.split(sw).join(" "); });
-        let words = cleanSentence.split(/\s+/).filter(w => w.length >= 2);
-        words.forEach(w => { wordCounts[w] = (wordCounts[w] || 0) + 1; });
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
       });
-
-      let sortedWords = Object.keys(wordCounts).sort((a,b) => wordCounts[b] - wordCounts[a]);
-      tagCloud.innerHTML = sortedWords.length ? sortedWords.slice(0, 10).map(w => `<span class="tag">${w}</span>`).join('') : '<span class="tag">寫多一點句子產生關鍵詞！</span>';
     }
 
-    function exportData() {
-      const data = localStorage.getItem('my_journals') || '[]';
-      const blob = new Blob([data], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `journal_backup_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-    }
-
-    function importJSONFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (Array.isArray(parsed)) {
-            localStorage.setItem('my_journals', evt.target.result);
-            alert('🎉 JSON 備份檔匯入成功！正在同步至雲端...');
-            await syncToCloud();
-            location.reload();
-          }
-        } catch(err) {
-          alert('讀取失敗！');
-        }
-      };
-      reader.readAsText(file);
-    }
+    // 啟動時自動拉取雲端數據
+    syncFromCloud();
   </script>
 </body>
 </html>
