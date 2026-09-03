@@ -48,34 +48,34 @@
     textarea { width: 100%; height: 80px; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; outline: none; resize: vertical; font-size: 0.95rem; font-family: inherit; }
     .btn-group { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
     .sync-status { font-size: 0.82rem; color: var(--text-sub); }
-    .save-btn { background: var(--accent); color: white; border: none; padding: 9px 24px; border-radius: 6px; font-size: 0.95rem; cursor: pointer; }
+    .save-btn { background: var(--accent); color: white; border: none; padding: 9px 24px; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: bold; }
 
     /* 歷史紀錄展示區 */
     .history-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
     .entry-list { display: flex; flex-direction: column; gap: 12px; }
     .entry-card { background: var(--card-bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
-    .entry-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .entry-date { font-size: 0.9rem; color: var(--accent); font-weight: bold; margin-bottom: 6px; }
+    .entry-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .entry-date { font-size: 0.95rem; color: var(--accent); font-weight: bold; margin-bottom: 6px; }
     .entry-preview { font-size: 0.9rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* 懸浮彈窗 Modal 樣式 */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       display: none; align-items: center; justify-content: center;
       z-index: 1000; padding: 15px;
     }
     .modal-content {
       background: #ffffff; border-radius: 14px; width: 100%; max-width: 550px;
-      max-height: 90vh; overflow-y: auto; padding: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative;
+      max-height: 85vh; overflow-y: auto; padding: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .modal-title { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
-    .modal-close { font-size: 1.5rem; border: none; background: transparent; cursor: pointer; color: var(--text-sub); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .modal-title { font-size: 1.15rem; font-weight: bold; color: var(--text-main); }
+    .modal-close { font-size: 1.6rem; border: none; background: transparent; cursor: pointer; color: var(--text-sub); line-height: 1; }
     .modal-btn-group { display: flex; justify-content: space-between; margin-top: 20px; }
-    .btn-danger { background: #e74c3c; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
-    .btn-success { background: #2ecc71; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .btn-danger { background: #e74c3c; color: white; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .btn-success { background: #2ecc71; color: white; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -115,7 +115,7 @@
   </div>
 
   <!-- 歷史日記列表區 -->
-  <div class="history-title">📚 歷史日記列表 (點擊展開檢視)</div>
+  <div class="history-title">📚 歷史日記列表 (點擊打開懸浮視窗)</div>
   <div id="entryList" class="entry-list"></div>
 
   <!-- 懸浮彈窗 Modal -->
@@ -170,8 +170,22 @@
     }
 
     function getLocalEntries() {
-      try { return JSON.parse(localStorage.getItem('my_321_rose_journal')) || []; }
-      catch(e) { return []; }
+      try {
+        const data = localStorage.getItem('my_321_rose_journal');
+        return data ? JSON.parse(data) : [];
+      } catch(e) {
+        console.error("本地讀取失敗，讀取備份:", e);
+        try {
+          const backup = localStorage.getItem('my_321_rose_journal_backup');
+          return backup ? JSON.parse(backup) : [];
+        } catch(err) { return []; }
+      }
+    }
+
+    function saveLocalEntries(entries) {
+      const str = JSON.stringify(entries);
+      localStorage.setItem('my_321_rose_journal', str);
+      localStorage.setItem('my_321_rose_journal_backup', str);
     }
 
     async function syncFromCloud() {
@@ -191,17 +205,25 @@
 
         const data = await res.json();
         currentSha = data.sha;
-        const cloudEntries = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        
+        // 使用 Safe UTF-8 Base64 解碼
+        const jsonStr = decodeURIComponent(escape(atob(data.content)));
+        const cloudEntries = JSON.parse(jsonStr);
         
         const mergedMap = new Map();
-        [...cloudEntries, ...getLocalEntries()].forEach(item => mergedMap.set(item.id || item.date, item));
+        [...cloudEntries, ...getLocalEntries()].forEach(item => {
+          if (item && (item.id || item.date)) {
+            mergedMap.set(String(item.id || item.date), item);
+          }
+        });
         const finalEntries = Array.from(mergedMap.values());
 
-        localStorage.setItem('my_321_rose_journal', JSON.stringify(finalEntries));
+        saveLocalEntries(finalEntries);
         renderEntries(finalEntries);
         status.innerText = '✅ 已與雲端同步';
       } catch (err) {
-        status.innerText = '❌ 同步失敗 (已顯示本地數據)';
+        console.error(err);
+        status.innerText = '❌ 同步失敗 (顯示本地資料)';
       }
     }
 
@@ -212,7 +234,8 @@
 
       status.innerText = '☁️ 上傳中...';
       try {
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(entries, null, 2))));
+        const jsonStr = JSON.stringify(entries, null, 2);
+        const content = btoa(unescape(encodeURIComponent(jsonStr)));
         const bodyData = { message: 'Update journal', content: content };
         if (currentSha) bodyData.sha = currentSha;
 
@@ -225,29 +248,41 @@
         if (res.ok) {
           currentSha = resData.content.sha;
           status.innerText = '✅ 同步成功';
+        } else {
+          status.innerText = '❌ 上傳受阻';
         }
       } catch (err) {
         status.innerText = '❌ 上傳失敗';
       }
     }
 
-    // 渲染歷史列表
+    // 渲染歷史列表（安全轉譯預覽文字）
     function renderEntries(entries) {
       const container = document.getElementById('entryList');
       if (!entries || entries.length === 0) {
         container.innerHTML = '<div style="text-align:center;color:#7f8c8d;padding:20px;">尚無歷史紀錄</div>';
         return;
       }
-      entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-      container.innerHTML = entries.map(item => `
-        <div class="entry-card" onclick="openModal('${item.id || item.date}')">
-          <div class="entry-date">📅 ${item.date}</div>
-          <div class="entry-preview">${escapeHtml(item.gratitude || item.progress || item.affirmation || '點擊查看全文...')}</div>
-        </div>
-      `).join('');
+      
+      const sorted = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      let html = '';
+      sorted.forEach(item => {
+        const id = String(item.id || item.date);
+        const dateStr = item.date || '無日期';
+        const previewText = (item.gratitude || item.progress || item.affirmation || '點擊查看全文...').replace(/\n/g, ' ');
+        
+        html += `
+          <div class="entry-card" onclick="openModal('${id}')">
+            <div class="entry-date">📅 ${dateStr}</div>
+            <div class="entry-preview">${escapeText(previewText)}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
-    // 新增文章
+    // 新增日記
     async function saveEntry() {
       const date = document.getElementById('entryDate').value;
       const gratitude = document.getElementById('gratitude').value.trim();
@@ -260,10 +295,18 @@
       }
 
       let entries = getLocalEntries();
-      entries = entries.filter(e => e.date !== date);
-      entries.push({ id: Date.now().toString(), date, gratitude, progress, affirmation });
-
-      localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+      entries = entries.filter(e => String(e.date) !== String(date));
+      
+      const newEntry = {
+        id: Date.now().toString(),
+        date: date,
+        gratitude: gratitude,
+        progress: progress,
+        affirmation: affirmation
+      };
+      
+      entries.push(newEntry);
+      saveLocalEntries(entries);
       
       document.getElementById('gratitude').value = '';
       document.getElementById('progress').value = '';
@@ -273,14 +316,14 @@
       await saveToCloud(entries);
     }
 
-    // --- 懸浮彈窗 Modal 操作邏輯 ---
+    // --- 懸浮視窗 Modal 操作邏輯 ---
     function openModal(id) {
       const entries = getLocalEntries();
-      const target = entries.find(e => (e.id || e.date) === id);
+      const target = entries.find(e => String(e.id || e.date) === String(id));
       if (!target) return;
 
-      document.getElementById('modalEntryId').value = target.id || target.date;
-      document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記細節`;
+      document.getElementById('modalEntryId').value = String(target.id || target.date);
+      document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記`;
       document.getElementById('modalGratitude').value = target.gratitude || '';
       document.getElementById('modalProgress').value = target.progress || '';
       document.getElementById('modalAffirmation').value = target.affirmation || '';
@@ -295,14 +338,14 @@
     async function updateModalEntry() {
       const id = document.getElementById('modalEntryId').value;
       let entries = getLocalEntries();
-      const targetIdx = entries.findIndex(e => (e.id || e.date) === id);
+      const targetIdx = entries.findIndex(e => String(e.id || e.date) === String(id));
 
       if (targetIdx !== -1) {
         entries[targetIdx].gratitude = document.getElementById('modalGratitude').value.trim();
         entries[targetIdx].progress = document.getElementById('modalProgress').value.trim();
         entries[targetIdx].affirmation = document.getElementById('modalAffirmation').value.trim();
 
-        localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+        saveLocalEntries(entries);
         renderEntries(entries);
         closeModal();
         await saveToCloud(entries);
@@ -312,16 +355,17 @@
     async function deleteModalEntry() {
       if (!confirm('確定要刪除這篇日記嗎？')) return;
       const id = document.getElementById('modalEntryId').value;
-      let entries = getLocalEntries().filter(e => (e.id || e.date) !== id);
+      let entries = getLocalEntries().filter(e => String(e.id || e.date) !== String(id));
 
-      localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+      saveLocalEntries(entries);
       renderEntries(entries);
       closeModal();
       await saveToCloud(entries);
     }
 
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    function escapeText(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     // 呼吸功能控制
