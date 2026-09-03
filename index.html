@@ -29,166 +29,36 @@
       margin: 0 auto;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-      position: relative;
-    }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: var(--text-main);
-    }
-    .token-settings {
-      position: absolute;
-      right: 0;
-      top: 0;
-      font-size: 0.8rem;
-      color: var(--text-sub);
-      cursor: pointer;
-      text-decoration: underline;
-    }
+    header { text-align: center; margin-bottom: 20px; position: relative; }
+    h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
+    .token-settings { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
 
     /* 478 呼吸卡片 */
-    .breath-card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 30px 20px;
-      text-align: center;
-      margin-bottom: 24px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .breath-circle-container {
-      height: 180px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .breath-circle {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      background: var(--breath-gradient);
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 20px rgba(46, 204, 113, 0.35);
-      cursor: pointer;
-      transform: scale(1);
-      user-select: none;
-    }
-    .breath-circle.animating {
-      transition: transform 1s linear;
-    }
-    .breath-circle .phase-text {
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.3;
-      text-align: center;
-    }
-    .breath-circle .count-text {
-      font-size: 2rem;
-      font-weight: bold;
-      line-height: 1.1;
-      margin-top: 2px;
-    }
+    .breath-card { background: #ffffff; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 24px; border: 1px solid var(--border-color); }
+    .breath-circle-container { height: 160px; display: flex; align-items: center; justify-content: center; }
+    .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: var(--breath-gradient); color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+    .breath-circle.animating { transition: transform 1s linear; }
+    .phase-text { font-size: 0.95rem; font-weight: 600; text-align: center; }
+    .count-text { font-size: 1.8rem; font-weight: bold; }
 
     /* 321 編輯區塊 */
-    .editor-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border: 1px solid var(--border-color);
-      margin-bottom: 24px;
-    }
-    .date-picker {
-      border: 1px solid var(--border-color);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      outline: none;
-      margin-bottom: 12px;
-      color: var(--text-main);
-      background: var(--bg-color);
-    }
-    .section-label {
-      font-size: 0.95rem;
-      font-weight: bold;
-      color: var(--accent);
-      margin: 14px 0 6px 0;
-    }
-    textarea {
-      width: 100%;
-      height: 85px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 10px;
-      outline: none;
-      resize: vertical;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: var(--text-main);
-      font-family: inherit;
-    }
-    .btn-group {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 16px;
-    }
-    .sync-status {
-      font-size: 0.82rem;
-      color: var(--text-sub);
-    }
-    .save-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 9px 24px;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
+    .editor-card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+    .date-picker { border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size: 0.95rem; outline: none; margin-bottom: 12px; background: var(--bg-color); }
+    .section-label { font-size: 0.95rem; font-weight: bold; color: var(--accent); margin: 14px 0 6px 0; }
+    textarea { width: 100%; height: 80px; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; outline: none; resize: vertical; font-size: 0.95rem; font-family: inherit; }
+    .btn-group { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+    .sync-status { font-size: 0.82rem; color: var(--text-sub); }
+    .save-btn { background: var(--accent); color: white; border: none; padding: 9px 24px; border-radius: 6px; font-size: 0.95rem; cursor: pointer; }
 
-    /* 歷史紀錄列表 */
+    /* 歷史紀錄展示區 */
+    .history-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
     .entry-list { display: flex; flex-direction: column; gap: 12px; }
-    .entry-card {
-      background: var(--card-bg);
-      border-radius: 10px;
-      padding: 14px 16px;
-      border: 1px solid var(--border-color);
-      position: relative;
-    }
-    .entry-date {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    .entry-section { margin-bottom: 8px; font-size: 0.95rem; white-space: pre-wrap; }
+    .entry-card { background: var(--card-bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); position: relative; }
+    .entry-date { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; }
+    .entry-section { margin-bottom: 8px; font-size: 0.92rem; white-space: pre-wrap; }
     .entry-tag { font-weight: bold; color: var(--accent); }
-    .delete-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: transparent;
-      color: #e74c3c;
-      border: none;
-      padding: 2px 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-    .empty-tip {
-      text-align: center;
-      color: var(--text-sub);
-      font-size: 0.9rem;
-      margin-top: 30px;
-    }
+    .delete-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: #e74c3c; border: none; font-size: 0.8rem; cursor: pointer; }
+    .empty-tip { text-align: center; color: var(--text-sub); font-size: 0.9rem; padding: 20px 0; }
   </style>
 </head>
 <body>
@@ -198,7 +68,7 @@
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
-  <!-- 478 呼吸卡片 -->
+  <!-- 呼吸放鬆區 -->
   <div class="breath-card">
     <div class="breath-circle-container">
       <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
@@ -208,9 +78,9 @@
     </div>
   </div>
 
-  <!-- 321 日記編輯卡片 -->
+  <!-- 寫日記區 -->
   <div class="editor-card">
-    <input type="date" id="entryDate" class="date-picker">
+    <input type="date" id="entryDate" class="date-picker" onchange="loadDateContent()">
     
     <div class="section-label">✨ 三件感恩的事</div>
     <textarea id="gratitude" placeholder="1. &#10;2. &#10;3. "></textarea>
@@ -227,6 +97,8 @@
     </div>
   </div>
 
+  <!-- 歷史日記面板 (原先漏掉的地方) -->
+  <div class="history-title">📚 歷史日記列表</div>
   <div id="entryList" class="entry-list"></div>
 
   <script>
@@ -241,18 +113,12 @@
     function getToken() {
       const token = localStorage.getItem('github_pwa_token');
       const authTime = localStorage.getItem('github_pwa_auth_time');
-      const now = Date.now();
-
-      if (token && authTime && (now - parseInt(authTime)) < ONE_DAY_MS) {
-        return token;
-      }
-      return null;
+      return (token && authTime && (Date.now() - parseInt(authTime)) < ONE_DAY_MS) ? token : null;
     }
 
     function setupToken() {
       const oldToken = localStorage.getItem('github_pwa_token') || '';
       const token = prompt('請輸入 GitHub Personal Access Token:', oldToken);
-      
       if (token !== null && token.trim() !== '') {
         localStorage.setItem('github_pwa_token', token.trim());
         localStorage.setItem('github_pwa_auth_time', Date.now().toString());
@@ -260,189 +126,95 @@
       }
     }
 
-    // --- 安全的本地數據讀取 (防止畫面空白) ---
     function getLocalEntries() {
-      try {
-        const data = localStorage.getItem('my_321_rose_journal');
-        return data ? JSON.parse(data) : [];
-      } catch(e) {
-        console.error("Local reading error", e);
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem('my_321_rose_journal')) || []; }
+      catch(e) { return []; }
+    }
+
+    // 依據選擇的日期自動填入內容
+    function loadDateContent() {
+      const date = document.getElementById('entryDate').value;
+      const entries = getLocalEntries();
+      const target = entries.find(e => e.date === date);
+
+      document.getElementById('gratitude').value = target ? target.gratitude || '' : '';
+      document.getElementById('progress').value = target ? target.progress || '' : '';
+      document.getElementById('affirmation').value = target ? target.affirmation || '' : '';
     }
 
     async function syncFromCloud() {
       const status = document.getElementById('syncStatus');
-      
-      // 步驟 1：永遠先渲染本地數據，保證舊日記立刻顯示出來！
       renderEntries(getLocalEntries());
+      loadDateContent();
 
       const token = getToken();
-      if (!token) {
-        status.innerText = '⚠️ 未啟用雲端同步 (顯示本機數據)';
-        return;
-      }
+      if (!token) { status.innerText = '⚠️ 未驗證 Token'; return; }
 
       status.innerText = '☁️ 雲端同步中...';
       try {
         const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
-
-        if (res.status === 404) {
-          status.innerText = '☁️ 雲端尚無檔案，準備建立';
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error(`HTTP 錯誤 ${res.status}: ${res.statusText}`);
-        }
+        if (res.status === 404) { status.innerText = '☁️ 準備建立新檔案'; return; }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
         currentSha = data.sha;
-        const content = decodeURIComponent(escape(atob(data.content)));
-        const cloudEntries = JSON.parse(content);
-
-        // 合併本地與雲端數據，防止資料蓋掉
-        const localEntries = getLocalEntries();
+        const cloudEntries = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        
         const mergedMap = new Map();
-        [...cloudEntries, ...localEntries].forEach(item => mergedMap.set(item.id, item));
+        [...cloudEntries, ...getLocalEntries()].forEach(item => mergedMap.set(item.id || item.date, item));
         const finalEntries = Array.from(mergedMap.values());
 
         localStorage.setItem('my_321_rose_journal', JSON.stringify(finalEntries));
         renderEntries(finalEntries);
+        loadDateContent();
         status.innerText = '✅ 已與雲端同步';
       } catch (err) {
-        console.error("Sync Error:", err);
-        status.innerText = '❌ 同步失敗：' + err.message;
+        status.innerText = '❌ 同步失敗 (已顯示本地數據)';
       }
     }
 
     async function saveToCloud(entries) {
       const token = getToken();
       const status = document.getElementById('syncStatus');
-      if (!token) {
-        alert('未驗證 Token，資料僅儲存於本機！');
-        return;
-      }
+      if (!token) return;
 
-      status.innerText = '☁️ 正在上傳雲端...';
+      status.innerText = '☁️ 上傳中...';
       try {
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(entries, null, 2))));
-        const bodyData = {
-          message: 'Update journal entries via 🌹 PWA',
-          content: content
-        };
+        const bodyData = { message: 'Update journal', content: content };
         if (currentSha) bodyData.sha = currentSha;
 
         const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github.v3+json'
-          },
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(bodyData)
         });
-
         const resData = await res.json();
         if (res.ok) {
           currentSha = resData.content.sha;
-          status.innerText = '✅ 雲端同步成功';
-        } else {
-          throw new Error(resData.message || `HTTP ${res.status}`);
+          status.innerText = '✅ 同步成功';
         }
       } catch (err) {
-        alert('雲端儲存失敗：' + err.message);
         status.innerText = '❌ 上傳失敗';
       }
     }
 
-    // --- 478 呼吸邏輯 ---
-    let breathTimer = null;
-    let isBreathing = false;
-
-    function toggleBreath() {
-      const circle = document.getElementById('breathCircle');
-      const phaseText = document.getElementById('phaseText');
-      const countText = document.getElementById('countText');
-
-      if (isBreathing) {
-        clearInterval(breathTimer);
-        isBreathing = false;
-        circle.classList.remove('animating');
-        circle.style.transform = "scale(1)";
-        phaseText.innerHTML = "點擊圓圈<br>開始放鬆";
-        countText.innerText = "";
-        return;
-      }
-
-      isBreathing = true;
-      circle.classList.add('animating');
-      startBreathCycle();
-    }
-
-    function startBreathCycle() {
-      const circle = document.getElementById('breathCircle');
-      const phaseText = document.getElementById('phaseText');
-      const countText = document.getElementById('countText');
-
-      let phases = [
-        { name: "吸氣 🫁", duration: 4, scale: 1.25 },
-        { name: "屏息 ⏸", duration: 7, scale: 1.25 },
-        { name: "呼氣 🌬", duration: 8, scale: 1.0 }
-      ];
-
-      let phaseIdx = 0;
-      let count = 1;
-
-      function tick() {
-        let current = phases[phaseIdx];
-        phaseText.innerText = current.name;
-        countText.innerText = count;
-        circle.style.transform = `scale(${current.scale})`;
-
-        if (count >= current.duration) {
-          phaseIdx++;
-          count = 1;
-
-          if (phaseIdx >= phases.length) {
-            clearInterval(breathTimer);
-            isBreathing = false;
-            circle.style.transform = "scale(1)";
-            phaseText.innerHTML = "完成放鬆<br>再來一次";
-            countText.innerText = "";
-            return;
-          }
-        } else {
-          count++;
-        }
-      }
-
-      tick();
-      breathTimer = setInterval(tick, 1000);
-    }
-
-    // --- 畫面渲染 ---
     function renderEntries(entries) {
       const container = document.getElementById('entryList');
       if (!entries || entries.length === 0) {
-        container.innerHTML = '<div class="empty-tip">目前還沒有日記，寫下第一篇吧！</div>';
+        container.innerHTML = '<div class="empty-tip">尚無歷史紀錄</div>';
         return;
       }
-
       entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-
       container.innerHTML = entries.map(item => `
         <div class="entry-card">
-          <div class="entry-date">${item.date}</div>
-          ${item.gratitude ? `<div class="entry-section"><span class="entry-tag">✨ 三件感恩的事：</span><br>${escapeHtml(item.gratitude)}</div>` : ''}
-          ${item.progress ? `<div class="entry-section"><span class="entry-tag">🌿 兩件做得好的事：</span><br>${escapeHtml(item.progress)}</div>` : ''}
-          ${item.affirmation ? `<div class="entry-section"><span class="entry-tag">💡 一句自我肯定：</span><br>${escapeHtml(item.affirmation)}</div>` : ''}
-          <button class="delete-btn" onclick="deleteEntry('${item.id}')">刪除</button>
+          <div class="entry-date">📅 ${item.date}</div>
+          ${item.gratitude ? `<div class="entry-section"><span class="entry-tag">✨ 感恩：</span>${escapeHtml(item.gratitude)}</div>` : ''}
+          ${item.progress ? `<div class="entry-section"><span class="entry-tag">🌿 進步：</span>${escapeHtml(item.progress)}</div>` : ''}
+          ${item.affirmation ? `<div class="entry-section"><span class="entry-tag">💡 肯定：</span>${escapeHtml(item.affirmation)}</div>` : ''}
+          <button class="delete-btn" onclick="deleteEntry('${item.id || item.date}')">刪除</button>
         </div>
       `).join('');
     }
@@ -453,54 +225,65 @@
       const progress = document.getElementById('progress').value.trim();
       const affirmation = document.getElementById('affirmation').value.trim();
 
-      if (!date || (!gratitude && !progress && !affirmation)) {
-        alert('請至少填寫一個欄位！');
-        return;
-      }
+      if (!date) return;
 
-      const entries = getLocalEntries();
-      const newEntry = {
-        id: Date.now().toString(),
-        date: date,
-        gratitude: gratitude,
-        progress: progress,
-        affirmation: affirmation
-      };
+      let entries = getLocalEntries();
+      // 覆蓋同日期的紀錄，或新增紀錄
+      entries = entries.filter(e => e.date !== date);
+      entries.push({ id: Date.now().toString(), date, gratitude, progress, affirmation });
 
-      entries.push(newEntry);
       localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
-
-      document.getElementById('gratitude').value = '';
-      document.getElementById('progress').value = '';
-      document.getElementById('affirmation').value = '';
       renderEntries(entries);
-
       await saveToCloud(entries);
     }
 
     async function deleteEntry(id) {
-      if (!confirm('確定要刪除這篇日記嗎？')) return;
-      let entries = getLocalEntries();
-      entries = entries.filter(e => e.id !== id);
+      if (!confirm('確定要刪除嗎？')) return;
+      let entries = getLocalEntries().filter(e => (e.id || e.date) !== id);
       localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
       renderEntries(entries);
-
+      loadDateContent();
       await saveToCloud(entries);
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, function(m) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        }[m];
-      });
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    // 啟動時先載入本地資料，再背景連線雲端
+    // 呼吸功能控制
+    let breathTimer = null, isBreathing = false;
+    function toggleBreath() {
+      const circle = document.getElementById('breathCircle');
+      if (isBreathing) {
+        clearInterval(breathTimer);
+        isBreathing = false;
+        circle.classList.remove('animating');
+        circle.style.transform = "scale(1)";
+        document.getElementById('phaseText').innerHTML = "點擊圓圈<br>開始放鬆";
+        document.getElementById('countText').innerText = "";
+        return;
+      }
+      isBreathing = true;
+      circle.classList.add('animating');
+      let phases = [{name:"吸氣 🫁",d:4,s:1.25},{name:"屏息 ⏸",d:7,s:1.25},{name:"呼氣 🌬",d:8,s:1.0}], pIdx=0, c=1;
+      const tick = () => {
+        let cur = phases[pIdx];
+        document.getElementById('phaseText').innerText = cur.name;
+        document.getElementById('countText').innerText = c;
+        circle.style.transform = `scale(${cur.s})`;
+        if (c >= cur.d) {
+          pIdx++; c = 1;
+          if (pIdx >= phases.length) {
+            clearInterval(breathTimer); isBreathing = false;
+            circle.style.transform = "scale(1)";
+            document.getElementById('phaseText').innerHTML = "完成放鬆<br>再來一次";
+            document.getElementById('countText').innerText = "";
+          }
+        } else { c++; }
+      };
+      tick(); breathTimer = setInterval(tick, 1000);
+    }
+
     syncFromCloud();
   </script>
 </body>
