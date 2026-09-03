@@ -49,7 +49,7 @@
       text-decoration: underline;
     }
 
-    /* 478 呼吸靜態圓圈區塊 (完全對齊單機版) */
+    /* 478 呼吸動態變色圓圈區塊 */
     .breath-card {
       background: #ffffff;
       border-radius: 12px;
@@ -68,34 +68,59 @@
       font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
     .breath-circle-container {
-      height: 90px;
+      height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 5px;
     }
     .breath-circle {
-      width: 70px;
-      height: 70px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      background: rgba(52, 152, 219, 0.15);
-      border: 2px solid #3498db;
+      background: #eef2f7;
+      border: 2px solid #bdc3c7;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      transition: all 0.5s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .breath-circle .phase-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+    }
+    .breath-circle .count-text {
+      font-size: 1.5rem;
       font-weight: bold;
+      line-height: 1.2;
+    }
+
+    /* 呼吸階段色彩變化 */
+    .breath-circle.inhale {
+      background: rgba(52, 152, 219, 0.15);
+      border-color: #3498db;
       color: #2980b9;
     }
-    .breath-status {
-      font-size: 0.95rem;
-      color: var(--text-sub);
-      margin-top: 8px;
-      min-height: 24px;
+    .breath-circle.inhale .phase-text { color: #2980b9; }
+
+    .breath-circle.hold {
+      background: rgba(155, 89, 182, 0.15);
+      border-color: #9b59b6;
+      color: #8e44ad;
     }
+    .breath-circle.hold .phase-text { color: #8e44ad; }
+
+    .breath-circle.exhale {
+      background: rgba(46, 204, 113, 0.15);
+      border-color: #2ecc71;
+      color: #27ae60;
+    }
+    .breath-circle.exhale .phase-text { color: #27ae60; }
 
     /* 321 編輯區塊 */
     .editor-card {
@@ -202,9 +227,11 @@
   <div class="breath-card">
     <button class="breath-btn" id="breathBtn" onclick="toggleBreath()">🫁 開始 4-7-8 呼吸放鬆</button>
     <div class="breath-circle-container">
-      <div class="breath-circle" id="breathCircle">準備</div>
+      <div class="breath-circle" id="breathCircle">
+        <span class="phase-text" id="phaseText">準備</span>
+        <span class="count-text" id="countText">-</span>
+      </div>
     </div>
-    <div class="breath-status" id="breathStatus">點擊按鈕開始放鬆</div>
   </div>
 
   <!-- 321 日記編輯卡片 -->
@@ -324,21 +351,23 @@
       }
     }
 
-    // --- 478 呼吸邏輯 (正數，圓圈不動) ---
+    // --- 478 呼吸邏輯 (字在圓圈內，動態變色) ---
     let breathTimer = null;
     let isBreathing = false;
 
     function toggleBreath() {
       const btn = document.getElementById('breathBtn');
       const circle = document.getElementById('breathCircle');
-      const status = document.getElementById('breathStatus');
-      
+      const phaseText = document.getElementById('phaseText');
+      const countText = document.getElementById('countText');
+
       if (isBreathing) {
         clearInterval(breathTimer);
         isBreathing = false;
         btn.innerText = "🫁 開始 4-7-8 呼吸放鬆";
-        circle.innerText = "準備";
-        status.innerText = "放鬆結束，保持好心情！";
+        circle.className = "breath-circle";
+        phaseText.innerText = "準備";
+        countText.innerText = "-";
         return;
       }
 
@@ -349,12 +378,13 @@
 
     function startBreathCycle() {
       const circle = document.getElementById('breathCircle');
-      const status = document.getElementById('breathStatus');
+      const phaseText = document.getElementById('phaseText');
+      const countText = document.getElementById('countText');
 
       let phases = [
-        { name: "吸氣 🫁", duration: 4 },
-        { name: "憋氣 ⏸", duration: 7 },
-        { name: "呼氣 🌬", duration: 8 }
+        { name: "吸氣 🫁", duration: 4, class: "inhale" },
+        { name: "屏氣 ⏸", duration: 7, class: "hold" },
+        { name: "吐氣 🌬", duration: 8, class: "exhale" }
       ];
 
       let phaseIdx = 0;
@@ -362,8 +392,9 @@
 
       function tick() {
         let current = phases[phaseIdx];
-        circle.innerText = count;
-        status.innerText = `${current.name} (${count} / ${current.duration} 秒)`;
+        circle.className = `breath-circle ${current.class}`;
+        phaseText.innerText = current.name;
+        countText.innerText = count;
 
         if (count >= current.duration) {
           phaseIdx = (phaseIdx + 1) % phases.length;
