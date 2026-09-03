@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>321 離線日記 🌹 v3.0 Calendar Edition</title>
+  <title>321 離線日記 🌹 v3.2 Fixed Edition</title>
   <link rel="icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="manifest" href="manifest.json">
@@ -31,9 +31,40 @@
       margin: 0 auto;
     }
 
-    header { text-align: center; margin-bottom: 20px; position: relative; }
+    header { text-align: center; margin-bottom: 16px; position: relative; }
     h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); letter-spacing: 1px; }
     .token-settings { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
+
+    /* 左右頁籤 (Tabs) 切換欄 */
+    .tab-container {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--text-sub);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      background: transparent;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--accent);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    /* 頁面切換控管 */
+    .page-content { display: none; }
+    .page-content.active { display: block; }
 
     /* 478 呼吸卡片 */
     .breath-card { background: #ffffff; border-radius: 16px; padding: 25px 20px; text-align: center; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
@@ -67,10 +98,10 @@
     .day-cell:hover { background: #edf2f7; }
     .day-cell.other-month { opacity: 0.25; cursor: default; }
     .day-cell.today { border-color: var(--accent); font-weight: bold; color: var(--accent); }
-    .day-cell.has-entry { font-weight: bold; background: var(--accent-light); }
-    .day-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; position: absolute; bottom: 5px; }
+    .day-cell.has-entry { font-weight: bold; background: var(--accent-light); color: var(--accent); cursor: pointer; }
+    .day-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; position: absolute; bottom: 5px; }
 
-    /* 懸浮彈窗 Modal */
+    /* 懸浮彈窗 Modal (儀式感閱讀模式) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px);
@@ -102,73 +133,88 @@
 <body>
 
   <header>
-    <h1>321 離線日記 🌹 v3.0</h1>
+    <h1>321 離線日記 🌹</h1>
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
-  <!-- 478 呼吸區 -->
-  <div class="breath-card">
-    <div class="breath-circle-container">
-      <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
-        <span class="phase-text" id="phaseText">點擊圓圈<br>開始放鬆</span>
-        <span class="count-text" id="countText"></span>
+  <!-- 雙頁籤選擇 (寫日記 / 歷史紀錄) -->
+  <div class="tab-container">
+    <button class="tab-btn active" id="btnTabWrite" onclick="switchTab('write')">✏️ 寫日記</button>
+    <button class="tab-btn" id="btnTabHistory" onclick="switchTab('history')">📖 歷史紀錄</button>
+  </div>
+
+  <!-- 頁面 1：寫日記 -->
+  <div id="pageWrite" class="page-content active">
+    <!-- 478 呼吸區 -->
+    <div class="breath-card">
+      <div class="breath-circle-container">
+        <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
+          <span class="phase-text" id="phaseText">點擊圓圈<br>開始放鬆</span>
+          <span class="count-text" id="countText"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編輯區塊 -->
+    <div class="editor-card">
+      <input type="date" id="entryDate" class="date-picker">
+      
+      <div class="section-label">✨ 三件感恩的事</div>
+      <textarea id="gratitude" placeholder="1. &#10;2. &#10;3. "></textarea>
+
+      <div class="section-label">🌿 兩件做得好的事</div>
+      <textarea id="progress" placeholder="1. &#10;2. "></textarea>
+
+      <div class="section-label">💡 一句自我肯定</div>
+      <textarea id="affirmation" placeholder="1. "></textarea>
+
+      <div class="btn-group">
+        <span class="sync-status" id="syncStatus">就緒</span>
+        <button class="save-btn" onclick="saveEntry()">儲存並同步</button>
       </div>
     </div>
   </div>
 
-  <!-- 新增日記區 -->
-  <div class="editor-card">
-    <input type="date" id="entryDate" class="date-picker">
-    
-    <div class="section-label">✨ 三件感恩的事</div>
-    <textarea id="gratitude" placeholder="1. &#10;2. &#10;3. "></textarea>
-
-    <div class="section-label">🌿 兩件做得好的事</div>
-    <textarea id="progress" placeholder="1. &#10;2. "></textarea>
-
-    <div class="section-label">💡 一句自我肯定</div>
-    <textarea id="affirmation" placeholder="今天我也做得很好！"></textarea>
-
-    <div class="btn-group">
-      <span class="sync-status" id="syncStatus">☁️ 準備就緒</span>
-      <button class="save-btn" onclick="saveDiary()">儲存日記</button>
+  <!-- 頁面 2：歷史紀錄 (日曆月視圖) -->
+  <div id="pageHistory" class="page-content">
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <button class="cal-btn" onclick="changeMonth(-1)">‹ 上個月</button>
+        <div class="calendar-title" id="calMonthTitle">2026 年 09 月</div>
+        <button class="cal-btn" onclick="changeMonth(1)">下個月 ›</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
     </div>
   </div>
 
-  <!-- 日曆月視圖列表 -->
-  <div class="calendar-card">
-    <div class="calendar-header">
-      <button class="cal-btn" onclick="changeMonth(-1)">‹ 上個月</button>
-      <div class="calendar-title" id="calMonthTitle">2026 年 09 月</div>
-      <button class="cal-btn" onclick="changeMonth(1)">下個月 ›</button>
-    </div>
-    <div class="calendar-grid" id="calendarGrid"></div>
-  </div>
-
-  <!-- 浮窗 Modal (用於閱讀/編輯) -->
-  <div class="modal-overlay" id="diaryModal">
+  <!-- 懸浮彈窗 Modal (閱讀與編輯模式) -->
+  <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title" id="modalDateTitle">📅 日記內文</div>
+        <span class="modal-title" id="modalDateTitle">📅 日記詳情</span>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
 
+      <input type="hidden" id="modalEntryDate">
+      
+      <!-- 閱讀模式 -->
       <div id="modalReadMode">
         <div class="section-label">✨ 三件感恩的事</div>
-        <div id="modalGratitude" class="read-box"></div>
+        <div class="read-box" id="readGratitude"></div>
 
         <div class="section-label">🌿 兩件做得好的事</div>
-        <div id="modalProgress" class="read-box"></div>
+        <div class="read-box" id="readProgress"></div>
 
         <div class="section-label">💡 一句自我肯定</div>
-        <div id="modalAffirmation" class="read-box"></div>
+        <div class="read-box" id="readAffirmation"></div>
 
         <div class="modal-btn-group">
-          <button class="btn-danger" onclick="deleteCurrentModalEntry()">刪除此篇</button>
-          <button class="btn-edit-toggle" onclick="switchToEditMode()">✏️ 編輯內容</button>
+          <button class="btn-danger" onclick="deleteModalEntry()">刪除此篇</button>
+          <button class="btn-edit-toggle" onclick="switchToEditModal()">✏️ 編輯內容</button>
         </div>
       </div>
 
+      <!-- 編輯模式 -->
       <div id="modalEditMode" style="display: none;">
         <div class="section-label">✨ 三件感恩的事</div>
         <textarea id="editGratitude"></textarea>
@@ -180,7 +226,7 @@
         <textarea id="editAffirmation"></textarea>
 
         <div class="modal-btn-group">
-          <button class="btn-edit-toggle" onclick="switchToReadMode()">取消</button>
+          <button class="btn-edit-toggle" onclick="switchToReadModal()">取消</button>
           <button class="btn-success" onclick="saveModalEdit()">💾 保存更新</button>
         </div>
       </div>
@@ -188,7 +234,6 @@
   </div>
 
   <script>
-    // GitHub API 配置
     const GITHUB_REPO = "ekoh0822-ops/mydiary"; 
     const FILE_PATH = "journal.json";
     let githubToken = localStorage.getItem("gh_token") || "";
@@ -198,11 +243,9 @@
     let activeModalDate = "";
     let currentCalDate = new Date();
 
-    // 頁面初始化
     window.onload = () => {
       document.getElementById("entryDate").value = getTodayStr();
       loadDiaryData();
-      renderCalendar();
     };
 
     function getTodayStr() {
@@ -211,8 +254,29 @@
       return new Date(now.getTime() - offset).toISOString().split('T')[0];
     }
 
+    // 切換 Tab (寫日記 / 歷史紀錄)
+    function switchTab(tab) {
+      const pWrite = document.getElementById("pageWrite");
+      const pHistory = document.getElementById("pageHistory");
+      const btnWrite = document.getElementById("btnTabWrite");
+      const btnHistory = document.getElementById("btnTabHistory");
+
+      if (tab === 'write') {
+        pWrite.classList.add("active");
+        pHistory.classList.remove("active");
+        btnWrite.classList.add("active");
+        btnHistory.classList.remove("active");
+      } else {
+        pWrite.classList.remove("active");
+        pHistory.classList.add("active");
+        btnWrite.classList.remove("active");
+        btnHistory.classList.add("active");
+        renderCalendar();
+      }
+    }
+
     function setupToken() {
-      const token = prompt("請輸入您的 GitHub Personal Access Token (PAT):", githubToken);
+      const token = prompt("請輸入 GitHub Personal Access Token (PAT):", githubToken);
       if (token !== null) {
         githubToken = token.trim();
         localStorage.setItem("gh_token", githubToken);
@@ -221,14 +285,11 @@
       }
     }
 
-    // 載入資料 (優先 LocalStorage，後台拉取 GitHub)
+    // 載入資料
     async function loadDiaryData() {
       const local = localStorage.getItem("diary_data_v1");
       if (local) {
-        try {
-          diaryData = JSON.parse(local);
-          renderCalendar();
-        } catch(e) {}
+        try { diaryData = JSON.parse(local); renderCalendar(); } catch(e){}
       }
 
       if (!githubToken) return;
@@ -246,16 +307,14 @@
           localStorage.setItem("diary_data_v1", JSON.stringify(diaryData));
           document.getElementById("syncStatus").innerText = "☁️ 雲端同步完成";
           renderCalendar();
-        } else {
-          document.getElementById("syncStatus").innerText = "⚠️ 雲端讀取失敗";
         }
       } catch (err) {
         document.getElementById("syncStatus").innerText = "📡 離線模式中";
       }
     }
 
-    // 儲存寫入
-    async function saveDiary() {
+    // 新增/儲存日記
+    async function saveEntry() {
       const date = document.getElementById("entryDate").value;
       if (!date) return alert("請選擇日期！");
 
@@ -268,17 +327,15 @@
 
       diaryData[date] = entry;
       localStorage.setItem("diary_data_v1", JSON.stringify(diaryData));
-      renderCalendar();
-
+      
       document.getElementById("gratitude").value = "";
       document.getElementById("progress").value = "";
       document.getElementById("affirmation").value = "";
 
-      alert("已儲存於本機！");
+      alert("已儲存！");
       syncToGitHub();
     }
 
-    // 同步到 GitHub
     async function syncToGitHub() {
       if (!githubToken) return;
       document.getElementById("syncStatus").innerText = "🔄 正在備份至 GitHub...";
@@ -287,18 +344,12 @@
         const contentStr = JSON.stringify(diaryData, null, 2);
         const encodedContent = btoa(new TextEncoder().encode(contentStr).reduce((data, byte) => data + String.fromCharCode(byte), ''));
 
-        const bodyObj = {
-          message: `Update diary on ${getTodayStr()}`,
-          content: encodedContent
-        };
+        const bodyObj = { message: `Update diary`, content: encodedContent };
         if (fileSha) bodyObj.sha = fileSha;
 
         const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
           method: "PUT",
-          headers: {
-            "Authorization": `token ${githubToken}`,
-            "Content-Type": "application/json"
-          },
+          headers: { "Authorization": `token ${githubToken}`, "Content-Type": "application/json" },
           body: JSON.stringify(bodyObj)
         });
 
@@ -306,22 +357,18 @@
           const resData = await res.json();
           fileSha = resData.content.sha;
           document.getElementById("syncStatus").innerText = "☁️ 雲端備份成功！";
-        } else {
-          document.getElementById("syncStatus").innerText = "❌ 雲端備份失敗";
         }
-      } catch(err) {
-        document.getElementById("syncStatus").innerText = "❌ 備份連線異常";
-      }
+      } catch(err) {}
     }
 
-    // 渲染日曆月視圖
+    // 渲染日曆
     function renderCalendar() {
       const grid = document.getElementById("calendarGrid");
+      if (!grid) return;
       grid.innerHTML = "";
 
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
-
       document.getElementById("calMonthTitle").innerText = `${year} 年 ${String(month + 1).padStart(2, '0')} 月`;
 
       const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -336,7 +383,6 @@
       const totalDays = new Date(year, month + 1, 0).getDate();
       const prevMonthDays = new Date(year, month, 0).getDate();
 
-      // 上個月填空
       for (let i = firstDay - 1; i >= 0; i--) {
         const cell = document.createElement("div");
         cell.className = "day-cell other-month";
@@ -346,14 +392,12 @@
 
       const todayStr = getTodayStr();
 
-      // 當月日期
       for (let day = 1; day <= totalDays; day++) {
         const cell = document.createElement("div");
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
+
         cell.className = "day-cell";
         if (dateStr === todayStr) cell.classList.add("today");
-
         cell.innerText = day;
 
         if (diaryData[dateStr]) {
@@ -373,7 +417,7 @@
       renderCalendar();
     }
 
-    // 浮窗 Modal 操作
+    // 點擊日曆 -> 開啟浮窗 (Modal)
     function openModal(dateStr) {
       activeModalDate = dateStr;
       const data = diaryData[dateStr];
@@ -381,7 +425,6 @@
 
       document.getElementById("modalDateTitle").innerText = `📅 ${dateStr} 日記`;
 
-      // 相容舊資料邏輯
       let g = "", p = "", a = "";
       if (typeof data === "string") {
         g = data;
@@ -391,19 +434,19 @@
         a = data.affirmation || "";
       }
 
-      setModalReadBox("modalGratitude", g);
-      setModalReadBox("modalProgress", p);
-      setModalReadBox("modalAffirmation", a);
+      setReadBox("readGratitude", g);
+      setReadBox("readProgress", p);
+      setReadBox("readAffirmation", a);
 
       document.getElementById("editGratitude").value = g;
       document.getElementById("editProgress").value = p;
       document.getElementById("editAffirmation").value = a;
 
-      switchToReadMode();
-      document.getElementById("diaryModal").style.display = "flex";
+      switchToReadModal();
+      document.getElementById("modalOverlay").style.display = "flex";
     }
 
-    function setModalReadBox(id, text) {
+    function setReadBox(id, text) {
       const el = document.getElementById(id);
       if (text && text.trim()) {
         el.innerText = text;
@@ -415,15 +458,15 @@
     }
 
     function closeModal() {
-      document.getElementById("diaryModal").style.display = "none";
+      document.getElementById("modalOverlay").style.display = "none";
     }
 
-    function switchToEditMode() {
+    function switchToEditModal() {
       document.getElementById("modalReadMode").style.display = "none";
       document.getElementById("modalEditMode").style.display = "block";
     }
 
-    function switchToReadMode() {
+    function switchToReadModal() {
       document.getElementById("modalEditMode").style.display = "none";
       document.getElementById("modalReadMode").style.display = "block";
     }
@@ -431,14 +474,10 @@
     function saveModalEdit() {
       if (!activeModalDate) return;
 
-      const g = document.getElementById("editGratitude").value;
-      const p = document.getElementById("editProgress").value;
-      const a = document.getElementById("editAffirmation").value;
-
       diaryData[activeModalDate] = {
-        gratitude: g,
-        progress: p,
-        affirmation: a,
+        gratitude: document.getElementById("editGratitude").value,
+        progress: document.getElementById("editProgress").value,
+        affirmation: document.getElementById("editAffirmation").value,
         updatedAt: new Date().toISOString()
       };
 
@@ -448,7 +487,7 @@
       syncToGitHub();
     }
 
-    function deleteCurrentModalEntry() {
+    function deleteModalEntry() {
       if (!activeModalDate) return;
       if (confirm(`確定要刪除 ${activeModalDate} 的日記嗎？`)) {
         delete diaryData[activeModalDate];
@@ -459,9 +498,8 @@
       }
     }
 
-    // 478 呼吸計時器 logic
-    let timer = null;
-    let isBreathing = false;
+    // 478 呼吸計時器
+    let timer = null, isBreathing = false;
     function toggleBreath() {
       const circle = document.getElementById("breathCircle");
       const phase = document.getElementById("phaseText");
@@ -472,28 +510,17 @@
         isBreathing = false;
         circle.classList.remove("animating");
         circle.style.transform = "scale(1)";
-        phase.innerHTML = "點擊圓圈<br>開始放放松";
+        phase.innerHTML = "點擊圓圈<br>開始放鬆";
         count.innerText = "";
         return;
       }
 
       isBreathing = true;
-      let step = 0; 
-      let timeLeft = 4;
-
+      let step = 0, timeLeft = 4;
       const runCycle = () => {
-        if (step === 0) {
-          phase.innerText = "吸氣 (Inhale)";
-          circle.style.transform = "scale(1.3)";
-          timeLeft = 4;
-        } else if (step === 1) {
-          phase.innerText = "屏息 (Hold)";
-          timeLeft = 7;
-        } else if (step === 2) {
-          phase.innerText = "呼氣 (Exhale)";
-          circle.style.transform = "scale(1)";
-          timeLeft = 8;
-        }
+        if (step === 0) { phase.innerText = "吸氣 (Inhale)"; circle.style.transform = "scale(1.3)"; timeLeft = 4; }
+        else if (step === 1) { phase.innerText = "屏息 (Hold)"; timeLeft = 7; }
+        else if (step === 2) { phase.innerText = "呼氣 (Exhale)"; circle.style.transform = "scale(1)"; timeLeft = 8; }
         count.innerText = timeLeft;
       };
 
@@ -502,12 +529,8 @@
 
       timer = setInterval(() => {
         timeLeft--;
-        if (timeLeft > 0) {
-          count.innerText = timeLeft;
-        } else {
-          step = (step + 1) % 3;
-          runCycle();
-        }
+        if (timeLeft > 0) { count.innerText = timeLeft; }
+        else { step = (step + 1) % 3; runCycle(); }
       }, 1000);
     }
   </script>
