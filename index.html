@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>321 離線日記 🌹 v2.0</title>
+  <title>321 離線日記 🌹 v2.1 Fixed</title>
   <link rel="icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="manifest" href="manifest.json">
@@ -82,7 +82,7 @@
 <body>
 
   <header>
-    <h1>321 離線日記 🌹 v2.0</h1>
+    <h1>321 離線日記 🌹 v2.1</h1>
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
@@ -146,13 +146,6 @@
   </div>
 
   <script>
-    // 清除舊版 PWA ServiceWorker 快取干擾
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) { registration.unregister(); }
-      });
-    }
-
     document.getElementById('entryDate').valueAsDate = new Date();
 
     const GITHUB_USER = 'ekoh0822-ops';
@@ -186,6 +179,13 @@
 
     function saveLocalEntries(entries) {
       localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+    }
+
+    // 安全轉字串工具函式（徹底解決型態不符問題）
+    function safeString(val) {
+      if (val === null || val === undefined) return '';
+      if (Array.isArray(val)) return val.join('\n');
+      return String(val);
     }
 
     async function syncFromCloud() {
@@ -265,7 +265,10 @@
       sorted.forEach(item => {
         const id = String(item.id || item.date);
         const dateStr = item.date || '無日期';
-        const previewText = (item.gratitude || item.progress || item.affirmation || '點擊查看全文...').replace(/\n/g, ' ');
+        
+        // 確保轉為字串後再進行 replace 預覽處理
+        const rawText = safeString(item.gratitude) || safeString(item.progress) || safeString(item.affirmation) || '點擊查看全文...';
+        const previewText = rawText.replace(/\n/g, ' ');
         
         html += `
           <div class="entry-card" onclick="openModal('${id}')">
@@ -317,9 +320,10 @@
 
       document.getElementById('modalEntryId').value = String(target.id || target.date);
       document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記詳情`;
-      document.getElementById('modalGratitude').value = target.gratitude || '';
-      document.getElementById('modalProgress').value = target.progress || '';
-      document.getElementById('modalAffirmation').value = target.affirmation || '';
+      
+      document.getElementById('modalGratitude').value = safeString(target.gratitude);
+      document.getElementById('modalProgress').value = safeString(target.progress);
+      document.getElementById('modalAffirmation').value = safeString(target.affirmation);
 
       document.getElementById('modalOverlay').style.display = 'flex';
     }
@@ -357,8 +361,7 @@
     }
 
     function escapeText(str) {
-      if (!str) return '';
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return safeString(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     let breathTimer = null, isBreathing = false;
