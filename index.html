@@ -50,7 +50,7 @@
       text-decoration: underline;
     }
 
-    /* 478 呼吸卡片與加大圓圈 (對齊下方欄位) */
+    /* 478 呼吸卡片 */
     .breath-card {
       background: #ffffff;
       border-radius: 12px;
@@ -81,12 +81,9 @@
       transform: scale(1);
       user-select: none;
     }
-
-    /* 縮放平滑動畫 */
     .breath-circle.animating {
       transition: transform 1s linear;
     }
-
     .breath-circle .phase-text {
       font-size: 1rem;
       font-weight: 600;
@@ -201,7 +198,7 @@
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
-  <!-- 478 呼吸卡片 (直接點擊圓圈開始/停止) -->
+  <!-- 478 呼吸卡片 -->
   <div class="breath-card">
     <div class="breath-circle-container">
       <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
@@ -235,11 +232,10 @@
   <script>
     document.getElementById('entryDate').valueAsDate = new Date();
 
-    // --- GitHub API 雲端同步 & Token 24小時免重輸驗證 ---
     const GITHUB_USER = 'ekoh0822-ops';
     const GITHUB_REPO = 'my-journal-data';
     const FILE_PATH = 'journal.json';
-    const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24小時毫秒數
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     let currentSha = '';
 
     function getToken() {
@@ -247,7 +243,6 @@
       const authTime = localStorage.getItem('github_pwa_auth_time');
       const now = Date.now();
 
-      // 如果有 Token 且在 24 小時有效期內
       if (token && authTime && (now - parseInt(authTime)) < ONE_DAY_MS) {
         return token;
       }
@@ -261,40 +256,49 @@
       if (token !== null && token.trim() !== '') {
         localStorage.setItem('github_pwa_token', token.trim());
         localStorage.setItem('github_pwa_auth_time', Date.now().toString());
-        alert('✅ Token 設定成功！未來 24 小時內免重複驗證。');
         syncFromCloud();
       }
     }
 
-    async function syncFromCloud() {
-      const token = getToken();
-      const status = document.getElementById('syncStatus');
+    // --- 安全的本地數據讀取 (防止畫面空白) ---
+    function getLocalEntries() {
+      try {
+        const data = localStorage.getItem('my_321_rose_journal');
+        return data ? JSON.parse(data) : [];
+      } catch(e) {
+        console.error("Local reading error", e);
+        return [];
+      }
+    }
 
+    async function syncFromCloud() {
+      const status = document.getElementById('syncStatus');
+      
+      // 步驟 1：永遠先渲染本地數據，保證舊日記立刻顯示出來！
+      renderEntries(getLocalEntries());
+
+      const token = getToken();
       if (!token) {
-        const savedToken = localStorage.getItem('github_pwa_token');
-        if (savedToken) {
-          // Token 存在但已超過 24 小時，提示續簽
-          const confirmAuth = confirm('🔑 驗證已超過 24 小時，要重新啟用雲端同步嗎？');
-          if (confirmAuth) {
-            localStorage.setItem('github_pwa_auth_time', Date.now().toString());
-            syncFromCloud();
-            return;
-          }
-        }
-        status.innerText = '⚠️ 未啟用雲端同步';
-        renderEntries(getLocalEntries());
+        status.innerText = '⚠️ 未啟用雲端同步 (顯示本機數據)';
         return;
       }
 
       status.innerText = '☁️ 雲端同步中...';
       try {
         const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-          headers: { 'Authorization': `token ${token}` }
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
         });
 
         if (res.status === 404) {
-          status.innerText = '☁️ 雲端無檔案，準備建立';
+          status.innerText = '☁️ 雲端尚無檔案，準備建立';
           return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`HTTP 錯誤 ${res.status}: ${res.statusText}`);
         }
 
         const data = await res.json();
@@ -302,13 +306,18 @@
         const content = decodeURIComponent(escape(atob(data.content)));
         const cloudEntries = JSON.parse(content);
 
-        localStorage.setItem('my_321_rose_journal', JSON.stringify(cloudEntries));
-        renderEntries(cloudEntries);
+        // 合併本地與雲端數據，防止資料蓋掉
+        const localEntries = getLocalEntries();
+        const mergedMap = new Map();
+        [...cloudEntries, ...localEntries].forEach(item => mergedMap.set(item.id, item));
+        const finalEntries = Array.from(mergedMap.values());
+
+        localStorage.setItem('my_321_rose_journal', JSON.stringify(finalEntries));
+        renderEntries(finalEntries);
         status.innerText = '✅ 已與雲端同步';
       } catch (err) {
-        console.error(err);
-        status.innerText = '❌ 同步失敗 (使用本地數據)';
-        renderEntries(getLocalEntries());
+        console.error("Sync Error:", err);
+        status.innerText = '❌ 同步失敗：' + err.message;
       }
     }
 
@@ -332,8 +341,9 @@
         const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `token ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
           },
           body: JSON.stringify(bodyData)
         });
@@ -343,15 +353,15 @@
           currentSha = resData.content.sha;
           status.innerText = '✅ 雲端同步成功';
         } else {
-          throw new Error(resData.message);
+          throw new Error(resData.message || `HTTP ${res.status}`);
         }
       } catch (err) {
         alert('雲端儲存失敗：' + err.message);
-        status.innerText = '❌ 同步失敗';
+        status.innerText = '❌ 上傳失敗';
       }
     }
 
-    // --- 478 呼吸邏輯 (點擊大圓圈控制，自動縮放) ---
+    // --- 478 呼吸邏輯 ---
     let breathTimer = null;
     let isBreathing = false;
 
@@ -381,9 +391,9 @@
       const countText = document.getElementById('countText');
 
       let phases = [
-        { name: "吸氣 ", duration: 4, scale: 1.25 },
-        { name: "屏息 ", duration: 7, scale: 1.25 },
-        { name: "呼氣 ", duration: 8, scale: 1.0 }
+        { name: "吸氣 🫁", duration: 4, scale: 1.25 },
+        { name: "屏息 ⏸", duration: 7, scale: 1.25 },
+        { name: "呼氣 🌬", duration: 8, scale: 1.0 }
       ];
 
       let phaseIdx = 0;
@@ -393,7 +403,6 @@
         let current = phases[phaseIdx];
         phaseText.innerText = current.name;
         countText.innerText = count;
-
         circle.style.transform = `scale(${current.scale})`;
 
         if (count >= current.duration) {
@@ -417,12 +426,7 @@
       breathTimer = setInterval(tick, 1000);
     }
 
-    // --- 日記資料讀寫邏輯 ---
-    function getLocalEntries() {
-      const data = localStorage.getItem('my_321_rose_journal');
-      return data ? JSON.parse(data) : [];
-    }
-
+    // --- 畫面渲染 ---
     function renderEntries(entries) {
       const container = document.getElementById('entryList');
       if (!entries || entries.length === 0) {
@@ -496,7 +500,7 @@
       });
     }
 
-    // 啟動時自動檢查驗證並拉取雲端數據
+    // 啟動時先載入本地資料，再背景連線雲端
     syncFromCloud();
   </script>
 </body>
