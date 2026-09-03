@@ -49,7 +49,7 @@
       text-decoration: underline;
     }
 
-   /* 478 呼吸靜態圓圈區塊 (對齊單機版) */
+    /* 478 呼吸靜態圓圈區塊 (完全對齊單機版) */
     .breath-card {
       background: #ffffff;
       border-radius: 12px;
@@ -198,7 +198,7 @@
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
-  <!-- 478 呼吸卡片 (靜態圓圈 + 正數) -->
+  <!-- 478 呼吸卡片 -->
   <div class="breath-card">
     <button class="breath-btn" id="breathBtn" onclick="toggleBreath()">🫁 開始 4-7-8 呼吸放鬆</button>
     <div class="breath-circle-container">
@@ -324,7 +324,7 @@
       }
     }
 
-   // --- 478 呼吸邏輯 (與單機版一致：正數、靜止圓圈) ---
+    // --- 478 呼吸邏輯 (正數，圓圈不動) ---
     let breathTimer = null;
     let isBreathing = false;
 
