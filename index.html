@@ -34,15 +34,15 @@
     .token-settings { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
 
     /* 478 呼吸卡片 */
-    .breath-card { background: #ffffff; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 24px; border: 1px solid var(--border-color); }
+    .breath-card { background: #ffffff; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
     .breath-circle-container { height: 160px; display: flex; align-items: center; justify-content: center; }
-    .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: var(--breath-gradient); color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+    .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: var(--breath-gradient); color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.35); }
     .breath-circle.animating { transition: transform 1s linear; }
     .phase-text { font-size: 0.95rem; font-weight: 600; text-align: center; }
     .count-text { font-size: 1.8rem; font-weight: bold; }
 
     /* 321 編輯區塊 */
-    .editor-card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+    .editor-card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .date-picker { border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size: 0.95rem; outline: none; margin-bottom: 12px; background: var(--bg-color); }
     .section-label { font-size: 0.95rem; font-weight: bold; color: var(--accent); margin: 14px 0 6px 0; }
     textarea { width: 100%; height: 80px; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; outline: none; resize: vertical; font-size: 0.95rem; font-family: inherit; }
@@ -53,12 +53,29 @@
     /* 歷史紀錄展示區 */
     .history-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
     .entry-list { display: flex; flex-direction: column; gap: 12px; }
-    .entry-card { background: var(--card-bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); position: relative; }
-    .entry-date { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; }
-    .entry-section { margin-bottom: 8px; font-size: 0.92rem; white-space: pre-wrap; }
-    .entry-tag { font-weight: bold; color: var(--accent); }
-    .delete-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: #e74c3c; border: none; font-size: 0.8rem; cursor: pointer; }
-    .empty-tip { text-align: center; color: var(--text-sub); font-size: 0.9rem; padding: 20px 0; }
+    .entry-card { background: var(--card-bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+    .entry-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .entry-date { font-size: 0.9rem; color: var(--accent); font-weight: bold; margin-bottom: 6px; }
+    .entry-preview { font-size: 0.9rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 懸浮彈窗 Modal 樣式 */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 15px;
+    }
+    .modal-content {
+      background: #ffffff; border-radius: 14px; width: 100%; max-width: 550px;
+      max-height: 90vh; overflow-y: auto; padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .modal-title { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+    .modal-close { font-size: 1.5rem; border: none; background: transparent; cursor: pointer; color: var(--text-sub); }
+    .modal-btn-group { display: flex; justify-content: space-between; margin-top: 20px; }
+    .btn-danger { background: #e74c3c; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .btn-success { background: #2ecc71; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
   </style>
 </head>
 <body>
@@ -68,7 +85,7 @@
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
-  <!-- 呼吸放鬆區 -->
+  <!-- 478 呼吸區 -->
   <div class="breath-card">
     <div class="breath-circle-container">
       <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
@@ -78,9 +95,9 @@
     </div>
   </div>
 
-  <!-- 寫日記區 -->
+  <!-- 新增日記區 -->
   <div class="editor-card">
-    <input type="date" id="entryDate" class="date-picker" onchange="loadDateContent()">
+    <input type="date" id="entryDate" class="date-picker">
     
     <div class="section-label">✨ 三件感恩的事</div>
     <textarea id="gratitude" placeholder="1. &#10;2. &#10;3. "></textarea>
@@ -97,9 +114,35 @@
     </div>
   </div>
 
-  <!-- 歷史日記面板 (原先漏掉的地方) -->
-  <div class="history-title">📚 歷史日記列表</div>
+  <!-- 歷史日記列表區 -->
+  <div class="history-title">📚 歷史日記列表 (點擊展開檢視)</div>
   <div id="entryList" class="entry-list"></div>
+
+  <!-- 懸浮彈窗 Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="modalDateTitle">📅 日記內文</span>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+
+      <input type="hidden" id="modalEntryId">
+      
+      <div class="section-label">✨ 三件感恩的事</div>
+      <textarea id="modalGratitude"></textarea>
+
+      <div class="section-label">🌿 兩件做得好的事</div>
+      <textarea id="modalProgress"></textarea>
+
+      <div class="section-label">💡 一句自我肯定</div>
+      <textarea id="modalAffirmation"></textarea>
+
+      <div class="modal-btn-group">
+        <button class="btn-danger" onclick="deleteModalEntry()">刪除此篇</button>
+        <button class="btn-success" onclick="updateModalEntry()">更新並同步</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.getElementById('entryDate').valueAsDate = new Date();
@@ -131,21 +174,9 @@
       catch(e) { return []; }
     }
 
-    // 依據選擇的日期自動填入內容
-    function loadDateContent() {
-      const date = document.getElementById('entryDate').value;
-      const entries = getLocalEntries();
-      const target = entries.find(e => e.date === date);
-
-      document.getElementById('gratitude').value = target ? target.gratitude || '' : '';
-      document.getElementById('progress').value = target ? target.progress || '' : '';
-      document.getElementById('affirmation').value = target ? target.affirmation || '' : '';
-    }
-
     async function syncFromCloud() {
       const status = document.getElementById('syncStatus');
       renderEntries(getLocalEntries());
-      loadDateContent();
 
       const token = getToken();
       if (!token) { status.innerText = '⚠️ 未驗證 Token'; return; }
@@ -168,7 +199,6 @@
 
         localStorage.setItem('my_321_rose_journal', JSON.stringify(finalEntries));
         renderEntries(finalEntries);
-        loadDateContent();
         status.innerText = '✅ 已與雲端同步';
       } catch (err) {
         status.innerText = '❌ 同步失敗 (已顯示本地數據)';
@@ -201,48 +231,92 @@
       }
     }
 
+    // 渲染歷史列表
     function renderEntries(entries) {
       const container = document.getElementById('entryList');
       if (!entries || entries.length === 0) {
-        container.innerHTML = '<div class="empty-tip">尚無歷史紀錄</div>';
+        container.innerHTML = '<div style="text-align:center;color:#7f8c8d;padding:20px;">尚無歷史紀錄</div>';
         return;
       }
       entries.sort((a, b) => new Date(b.date) - new Date(a.date));
       container.innerHTML = entries.map(item => `
-        <div class="entry-card">
+        <div class="entry-card" onclick="openModal('${item.id || item.date}')">
           <div class="entry-date">📅 ${item.date}</div>
-          ${item.gratitude ? `<div class="entry-section"><span class="entry-tag">✨ 感恩：</span>${escapeHtml(item.gratitude)}</div>` : ''}
-          ${item.progress ? `<div class="entry-section"><span class="entry-tag">🌿 進步：</span>${escapeHtml(item.progress)}</div>` : ''}
-          ${item.affirmation ? `<div class="entry-section"><span class="entry-tag">💡 肯定：</span>${escapeHtml(item.affirmation)}</div>` : ''}
-          <button class="delete-btn" onclick="deleteEntry('${item.id || item.date}')">刪除</button>
+          <div class="entry-preview">${escapeHtml(item.gratitude || item.progress || item.affirmation || '點擊查看全文...')}</div>
         </div>
       `).join('');
     }
 
+    // 新增文章
     async function saveEntry() {
       const date = document.getElementById('entryDate').value;
       const gratitude = document.getElementById('gratitude').value.trim();
       const progress = document.getElementById('progress').value.trim();
       const affirmation = document.getElementById('affirmation').value.trim();
 
-      if (!date) return;
+      if (!date || (!gratitude && !progress && !affirmation)) {
+        alert('請至少填寫一個欄位！');
+        return;
+      }
 
       let entries = getLocalEntries();
-      // 覆蓋同日期的紀錄，或新增紀錄
       entries = entries.filter(e => e.date !== date);
       entries.push({ id: Date.now().toString(), date, gratitude, progress, affirmation });
 
       localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+      
+      document.getElementById('gratitude').value = '';
+      document.getElementById('progress').value = '';
+      document.getElementById('affirmation').value = '';
+      
       renderEntries(entries);
       await saveToCloud(entries);
     }
 
-    async function deleteEntry(id) {
-      if (!confirm('確定要刪除嗎？')) return;
+    // --- 懸浮彈窗 Modal 操作邏輯 ---
+    function openModal(id) {
+      const entries = getLocalEntries();
+      const target = entries.find(e => (e.id || e.date) === id);
+      if (!target) return;
+
+      document.getElementById('modalEntryId').value = target.id || target.date;
+      document.getElementById('modalDateTitle').innerText = `📅 ${target.date} 日記細節`;
+      document.getElementById('modalGratitude').value = target.gratitude || '';
+      document.getElementById('modalProgress').value = target.progress || '';
+      document.getElementById('modalAffirmation').value = target.affirmation || '';
+
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    async function updateModalEntry() {
+      const id = document.getElementById('modalEntryId').value;
+      let entries = getLocalEntries();
+      const targetIdx = entries.findIndex(e => (e.id || e.date) === id);
+
+      if (targetIdx !== -1) {
+        entries[targetIdx].gratitude = document.getElementById('modalGratitude').value.trim();
+        entries[targetIdx].progress = document.getElementById('modalProgress').value.trim();
+        entries[targetIdx].affirmation = document.getElementById('modalAffirmation').value.trim();
+
+        localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
+        renderEntries(entries);
+        closeModal();
+        await saveToCloud(entries);
+      }
+    }
+
+    async function deleteModalEntry() {
+      if (!confirm('確定要刪除這篇日記嗎？')) return;
+      const id = document.getElementById('modalEntryId').value;
       let entries = getLocalEntries().filter(e => (e.id || e.date) !== id);
+
       localStorage.setItem('my_321_rose_journal', JSON.stringify(entries));
       renderEntries(entries);
-      loadDateContent();
+      closeModal();
       await saveToCloud(entries);
     }
 
