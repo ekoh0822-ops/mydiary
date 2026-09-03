@@ -15,6 +15,7 @@
       --text-sub: #7f8c8d;
       --accent: #3498db;
       --border-color: #e2e8f0;
+      --breath-gradient: linear-gradient(135deg, #3498db, #2ecc71);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,7 +50,7 @@
       text-decoration: underline;
     }
 
-    /* 478 呼吸動態變色圓圈區塊 */
+    /* 478 呼吸動態縮放圓圈區塊 */
     .breath-card {
       background: #ffffff;
       border-radius: 12px;
@@ -60,7 +61,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .breath-btn {
-      background: linear-gradient(135deg, #3498db, #2ecc71);
+      background: var(--breath-gradient);
       color: white;
       border: none;
       padding: 10px 24px;
@@ -69,58 +70,44 @@
       font-weight: bold;
       cursor: pointer;
       margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
     }
     .breath-circle-container {
-      height: 120px;
+      height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .breath-circle {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
-      background: #eef2f7;
-      border: 2px solid #bdc3c7;
+      background: var(--breath-gradient);
+      color: #ffffff;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: all 0.5s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+      cursor: pointer;
+      transform: scale(1);
     }
+
+    /* 動態縮放動畫 Transition */
+    .breath-circle.animating {
+      transition: transform 1s linear;
+    }
+
     .breath-circle .phase-text {
       font-size: 0.85rem;
       font-weight: 600;
-      color: #555;
+      line-height: 1.2;
     }
     .breath-circle .count-text {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: bold;
       line-height: 1.2;
     }
-
-    /* 呼吸階段色彩變化 */
-    .breath-circle.inhale {
-      background: rgba(52, 152, 219, 0.15);
-      border-color: #3498db;
-      color: #2980b9;
-    }
-    .breath-circle.inhale .phase-text { color: #2980b9; }
-
-    .breath-circle.hold {
-      background: rgba(155, 89, 182, 0.15);
-      border-color: #9b59b6;
-      color: #8e44ad;
-    }
-    .breath-circle.hold .phase-text { color: #8e44ad; }
-
-    .breath-circle.exhale {
-      background: rgba(46, 204, 113, 0.15);
-      border-color: #2ecc71;
-      color: #27ae60;
-    }
-    .breath-circle.exhale .phase-text { color: #27ae60; }
 
     /* 321 編輯區塊 */
     .editor-card {
@@ -214,10 +201,64 @@
       font-size: 0.9rem;
       margin-top: 30px;
     }
+    /* 密碼鎖遮罩 */
+#lock-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.lock-box {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+}
+.lock-box h2 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+.lock-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  outline: none;
+  margin-bottom: 15px;
+}
+.lock-btn {
+  width: 100%;
+  padding: 10px;
+  background: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
-
+<!-- 密碼鎖畫面 -->
+<div id="lock-overlay">
+  <div class="lock-box">
+    <h2>🌹 請輸入日記密碼</h2>
+    <input type="password" id="passInput" class="lock-input" placeholder="****" onkeydown="if(event.key==='Enter') checkPassword()">
+    <button class="lock-btn" onclick="checkPassword()">解鎖日記</button>
+  </div>
+</div>
   <header>
     <h1>321 離線日記 🌹</h1>
     <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
@@ -227,9 +268,9 @@
   <div class="breath-card">
     <button class="breath-btn" id="breathBtn" onclick="toggleBreath()">🫁 開始 4-7-8 呼吸放鬆</button>
     <div class="breath-circle-container">
-      <div class="breath-circle" id="breathCircle">
+      <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
         <span class="phase-text" id="phaseText">準備</span>
-        <span class="count-text" id="countText">-</span>
+        <span class="count-text" id="countText"></span>
       </div>
     </div>
   </div>
@@ -351,7 +392,7 @@
       }
     }
 
-    // --- 478 呼吸邏輯 (字在圓圈內，動態變色) ---
+    // --- 478 呼吸邏輯 (漸層色、變大變小縮放、完成顯示) ---
     let breathTimer = null;
     let isBreathing = false;
 
@@ -365,14 +406,16 @@
         clearInterval(breathTimer);
         isBreathing = false;
         btn.innerText = "🫁 開始 4-7-8 呼吸放鬆";
-        circle.className = "breath-circle";
+        circle.classList.remove('animating');
+        circle.style.transform = "scale(1)";
         phaseText.innerText = "準備";
-        countText.innerText = "-";
+        countText.innerText = "";
         return;
       }
 
       isBreathing = true;
       btn.innerText = "⏹ 結束呼吸放鬆";
+      circle.classList.add('animating');
       startBreathCycle();
     }
 
@@ -380,11 +423,12 @@
       const circle = document.getElementById('breathCircle');
       const phaseText = document.getElementById('phaseText');
       const countText = document.getElementById('countText');
+      const btn = document.getElementById('breathBtn');
 
       let phases = [
-        { name: "吸氣 🫁", duration: 4, class: "inhale" },
-        { name: "屏氣 ⏸", duration: 7, class: "hold" },
-        { name: "吐氣 🌬", duration: 8, class: "exhale" }
+        { name: "吸氣 🫁", duration: 4, scale: 1.35 },
+        { name: "屏息 ⏸", duration: 7, scale: 1.35 },
+        { name: "呼氣 🌬", duration: 8, scale: 1.0 }
       ];
 
       let phaseIdx = 0;
@@ -392,13 +436,26 @@
 
       function tick() {
         let current = phases[phaseIdx];
-        circle.className = `breath-circle ${current.class}`;
         phaseText.innerText = current.name;
         countText.innerText = count;
 
+        // 計算縮放動畫
+        circle.style.transform = `scale(${current.scale})`;
+
         if (count >= current.duration) {
-          phaseIdx = (phaseIdx + 1) % phases.length;
+          phaseIdx++;
           count = 1;
+
+          // 一輪 (吸氣->屏息->呼氣) 結束
+          if (phaseIdx >= phases.length) {
+            clearInterval(breathTimer);
+            isBreathing = false;
+            btn.innerText = "🫁 開始 4-7-8 呼吸放鬆";
+            circle.style.transform = "scale(1)";
+            phaseText.innerHTML = "完成放鬆<br>再來一次";
+            countText.innerText = "";
+            return;
+          }
         } else {
           count++;
         }
@@ -489,6 +546,20 @@
 
     // 啟動時自動拉取雲端數據
     syncFromCloud();
+// 預設密碼設定（可自行修改）
+const MY_PASSWORD = "2071"; 
+
+function checkPassword() {
+  const input = document.getElementById('passInput').value;
+  if (input === MY_PASSWORD) {
+    // 密碼正確，隱藏遮罩
+    document.getElementById('lock-overlay').style.display = 'none';
+  } else {
+    alert('密碼錯誤！');
+    document.getElementById('passInput').value = '';
+  }
+}
+    
   </script>
 </body>
 </html>
