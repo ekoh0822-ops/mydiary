@@ -235,60 +235,12 @@
     let activeModalDate = "";
     let currentCalDate = new Date();
 
-    window.onload = () => {
-      checkLockStatus();
-      document.getElementById("entryDate").value = getTodayStr();
-    };
+   window.onload = () => {
+  loadDiaryData();
+  document.getElementById("entryDate").value = getTodayStr();
+};
 
-    // --- 密碼鎖邏輯 ---
-    function checkLockStatus() {
-      const savedPwd = localStorage.getItem("diary_app_pwd");
-      const lastUnlock = parseInt(localStorage.getItem("diary_unlock_time") || "0", 10);
-      const now = Date.now();
-
-      if (!savedPwd) {
-        // 未設定密碼，直接開啟
-        document.getElementById("lockScreen").style.display = "none";
-        loadDiaryData();
-      } else if (now - lastUnlock < LOCK_EXPIRE_MS) {
-        // 2小時內免輸入
-        document.getElementById("lockScreen").style.display = "none";
-        loadDiaryData();
-      } else {
-        // 需要解鎖
-        document.getElementById("lockScreen").style.display = "flex";
-      }
-    }
-
-    function unlockDiary() {
-      const savedPwd = localStorage.getItem("diary_app_pwd");
-      const inputPwd = document.getElementById("lockPasswordInput").value;
-
-      if (inputPwd === savedPwd) {
-        localStorage.setItem("diary_unlock_time", Date.now().toString());
-        document.getElementById("lockScreen").style.display = "none";
-        loadDiaryData();
-      } else {
-        alert("密碼不正確！");
-      }
-    }
-
-    function setAppPassword() {
-      const currentPwd = localStorage.getItem("diary_app_pwd");
-      let msg = currentPwd ? "請輸入新的解鎖密碼（留空則取消密碼）：" : "請設定開啟日記的解鎖密碼：";
-      const newPwd = prompt(msg);
-
-      if (newPwd !== null) {
-        if (newPwd.trim() === "") {
-          localStorage.removeItem("diary_app_pwd");
-          alert("已取消解鎖密碼！");
-        } else {
-          localStorage.setItem("diary_app_pwd", newPwd.trim());
-          localStorage.setItem("diary_unlock_time", Date.now().toString());
-          alert("密碼設定成功！解鎖後 2 小時內開啟免輸密碼。");
-        }
-      }
-    }
+  
 
     // --- 日記核心功能 ---
     function getTodayStr() {
