@@ -383,14 +383,51 @@
       const date = document.getElementById("entryDate").value;
       if (!date) return alert("請選擇日期！");
 
+      const newG = document.getElementById("gratitude").value.trim();
+      const newP = document.getElementById("progress").value.trim();
+      const newA = document.getElementById("affirmation").value.trim();
+
+      if (!newG && !newP && !newA) {
+        return alert("請至少填寫一個欄位再儲存喔！");
+      }
+
+      // 取得當前時間（例如 14:30）
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      // 取得今天原本已有內容（如果有的話）
+      const oldEntry = diaryMap[date] || {};
+      const oldG = typeof oldEntry === "string" ? oldEntry : (oldEntry.gratitude || oldEntry.g || "");
+      const oldP = typeof oldEntry === "string" ? "" : (oldEntry.progress || oldEntry.p || "");
+      const oldA = typeof oldEntry === "string" ? "" : (oldEntry.affirmation || oldEntry.a || "");
+
+      // 輔助函式：如果原本有內容，就換行追加（加上時間標籤）
+      const appendContent = (oldVal, newVal) => {
+        if (!newVal) return oldVal;
+        if (!oldVal || !oldVal.trim()) return newVal;
+        return `${oldVal.trim()}\n\n--- 補充于 ${timeStr} ---\n${newVal}`;
+      };
+
+      // 組合新舊內容
       const entry = {
-        id: Date.now().toString(),
+        id: oldEntry.id || Date.now().toString(),
         date: date,
-        gratitude: document.getElementById("gratitude").value,
-        progress: document.getElementById("progress").value,
-        affirmation: document.getElementById("affirmation").value,
+        gratitude: appendContent(oldG, newG),
+        progress: appendContent(oldP, newP),
+        affirmation: appendContent(oldA, newA),
         updatedAt: new Date().toISOString()
       };
+
+      diaryMap[date] = entry;
+      saveLocalAndSync();
+
+      // 清空輸入框
+      document.getElementById("gratitude").value = "";
+      document.getElementById("progress").value = "";
+      document.getElementById("affirmation").value = "";
+
+      alert("已成功儲存並追加到今天的日記！");
+    }
 
       diaryMap[date] = entry;
       saveLocalAndSync();
