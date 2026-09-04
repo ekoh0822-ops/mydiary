@@ -31,31 +31,9 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* 密碼鎖遮罩層 */
-    #lockScreen {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: #f8fafc; z-index: 99999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .lock-box {
-      background: #ffffff; padding: 30px 24px; border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; max-width: 320px; width: 100%;
-      border: 1px solid var(--border-color);
-    }
-    .lock-input {
-      width: 100%; padding: 12px; margin: 16px 0; border: 1px solid var(--border-color);
-      border-radius: 8px; text-align: center; font-size: 1.1rem; outline: none;
-    }
-    .lock-btn {
-      width: 100%; background: var(--accent); color: white; border: none;
-      padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
-    }
-
     header { text-align: center; margin-bottom: 16px; position: relative; }
     h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); letter-spacing: 1px; }
-    .header-btns { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); display: flex; gap: 8px; }
-    .header-btn { cursor: pointer; text-decoration: underline; }
+    .token-settings { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
 
     /* 478 呼吸卡片 */
     .breath-card { background: #ffffff; border-radius: 16px; padding: 25px 20px; text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
@@ -115,22 +93,9 @@
 </head>
 <body>
 
-  <!-- 密碼鎖畫面 -->
-  <div id="lockScreen">
-    <div class="lock-box">
-      <h2>🔒 321 離線日記</h2>
-      <p style="font-size: 0.85rem; color: #718096; margin-top: 6px;" id="lockDesc">請輸入解鎖密碼</p>
-      <input type="password" id="lockPasswordInput" class="lock-input" placeholder="輸入密碼">
-      <button class="lock-btn" onclick="unlockDiary()">進入日記</button>
-    </div>
-  </div>
-
   <header>
     <h1>321 離線日記 🌹</h1>
-    <div class="header-btns">
-      <span class="header-btn" onclick="setAppPassword()">🔒 設密碼</span>
-      <span class="header-btn" onclick="setupToken()">🔑 Token</span>
-    </div>
+    <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
   </header>
 
   <div class="breath-card">
@@ -223,11 +188,7 @@
     const GITHUB_REPO = "ekoh0822-ops/my-journal-data"; 
     const FILE_PATH = "journal.json";
     
-    // Token 永久保留
     let githubToken = localStorage.getItem("gh_token") || localStorage.getItem("github_pwa_token") || "";
-    
-    // 密碼解鎖 2 小時過期設定 (毫秒)
-    const LOCK_EXPIRE_MS = 2 * 60 * 60 * 1000;
 
     let diaryMap = {};
     let rawDataStore = null;
@@ -235,14 +196,13 @@
     let activeModalDate = "";
     let currentCalDate = new Date();
 
-   window.onload = () => {
-  loadDiaryData();
-  document.getElementById("entryDate").value = getTodayStr();
-};
+    window.onload = () => {
+      // 移除舊有密碼快取，確保暢通
+      localStorage.removeItem("diary_app_pwd");
+      document.getElementById("entryDate").value = getTodayStr();
+      loadDiaryData();
+    };
 
-  
-
-    // --- 日記核心功能 ---
     function getTodayStr() {
       const now = new Date();
       const offset = now.getTimezoneOffset() * 60000;
@@ -274,7 +234,7 @@
       if (token !== null) {
         githubToken = token.trim();
         localStorage.setItem("gh_token", githubToken);
-        alert("Token 已永久儲存！");
+        alert("Token 已儲存！");
         loadDiaryData();
       }
     }
@@ -343,24 +303,20 @@
         return alert("請至少填寫一個欄位再儲存喔！");
       }
 
-      // 取得當前時間（例如 14:30）
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      // 取得今天原本已有內容（如果有的話）
       const oldEntry = diaryMap[date] || {};
       const oldG = typeof oldEntry === "string" ? oldEntry : (oldEntry.gratitude || oldEntry.g || "");
       const oldP = typeof oldEntry === "string" ? "" : (oldEntry.progress || oldEntry.p || "");
       const oldA = typeof oldEntry === "string" ? "" : (oldEntry.affirmation || oldEntry.a || "");
 
-      // 輔助函式：如果原本有內容，就換行追加（加上時間標籤）
       const appendContent = (oldVal, newVal) => {
         if (!newVal) return oldVal;
         if (!oldVal || !oldVal.trim()) return newVal;
         return `${oldVal.trim()}\n\n--- 補充于 ${timeStr} ---\n${newVal}`;
       };
 
-      // 組合新舊內容
       const entry = {
         id: oldEntry.id || Date.now().toString(),
         date: date,
@@ -373,23 +329,12 @@
       diaryMap[date] = entry;
       saveLocalAndSync();
 
-      // 清空輸入框
-      document.getElementById("gratitude").value = "";
-      document.getElementById("progress").value = "";
-      document.getElementById("affirmation").value = "";
-
-      alert("已成功儲存並追加到今天的日記！");
-    }
-
-      diaryMap[date] = entry;
-      saveLocalAndSync();
-
       document.getElementById("gratitude").value = "";
       document.getElementById("progress").value = "";
       document.getElementById("affirmation").value = "";
 
       alert("已儲存！");
-    
+    }
 
     function saveLocalAndSync() {
       let exportData = Array.isArray(rawDataStore) ? Object.values(diaryMap) : diaryMap;
@@ -399,7 +344,7 @@
     }
 
     async function syncToGitHub(exportData) {
-      if (!githubToken) return alert("請先點擊右上角『🔑 Token』進行設定！");
+      if (!githubToken) return alert("請先設定 Token！");
       
       document.getElementById("syncStatus").innerText = "🔄 正在備份至 GitHub...";
 
