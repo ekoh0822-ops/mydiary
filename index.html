@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>321 離線日記 🌹</title>
   <link rel="icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
   <link rel="apple-touch-icon" href="https://ekoh0822-ops.github.io/mydiary/blue-rose.png">
@@ -29,13 +28,36 @@
       padding: 20px 15px;
       max-width: 680px;
       margin: 0 auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 密碼鎖遮罩層 */
+    #lockScreen {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: #f8fafc; z-index: 99999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .lock-box {
+      background: #ffffff; padding: 30px 24px; border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; max-width: 320px; width: 100%;
+      border: 1px solid var(--border-color);
+    }
+    .lock-input {
+      width: 100%; padding: 12px; margin: 16px 0; border: 1px solid var(--border-color);
+      border-radius: 8px; text-align: center; font-size: 1.1rem; outline: none;
+    }
+    .lock-btn {
+      width: 100%; background: var(--accent); color: white; border: none;
+      padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
     }
 
     header { text-align: center; margin-bottom: 16px; position: relative; }
     h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); letter-spacing: 1px; }
-    .token-settings { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
+    .header-btns { position: absolute; right: 0; top: 0; font-size: 0.8rem; color: var(--text-sub); display: flex; gap: 8px; }
+    .header-btn { cursor: pointer; text-decoration: underline; }
 
-    /* 478 呼吸卡片 (最頂部) */
+    /* 478 呼吸卡片 */
     .breath-card { background: #ffffff; border-radius: 16px; padding: 25px 20px; text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
     .breath-circle-container { height: 150px; display: flex; align-items: center; justify-content: center; }
     .breath-circle { width: 125px; height: 125px; border-radius: 50%; background: var(--breath-gradient); color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; box-shadow: 0 8px 24px rgba(66, 153, 225, 0.3); transition: transform 0.3s ease; }
@@ -43,106 +65,74 @@
     .phase-text { font-size: 0.95rem; font-weight: 600; text-align: center; }
     .count-text { font-size: 1.8rem; font-weight: bold; }
 
-    /* 左右頁籤 (Tabs) 切換欄 (中間) */
-    .tab-container {
-      display: flex;
-      background: #e2e8f0;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 20px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      font-size: 0.95rem;
-      font-weight: bold;
-      color: var(--text-sub);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .tab-btn.active {
-      background: #ffffff;
-      color: var(--text-main);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      border: 1px solid #000;
-    }
+    /* 切換頁籤 */
+    .tab-container { display: flex; background: #e2e8f0; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 10px; text-align: center; font-size: 0.95rem; font-weight: bold; color: var(--text-sub); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: none; background: transparent; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .tab-btn.active { background: #ffffff; color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid #000; }
 
-    /* 頁面切換 */
     .page-content { display: none; }
     .page-content.active { display: block; }
 
-    /* 321 編輯區塊 */
+    /* 編輯區塊 */
     .editor-card { background: var(--card-bg); border-radius: 16px; padding: 22px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .date-picker { border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; font-size: 0.95rem; outline: none; margin-bottom: 12px; background: #f7fafc; color: var(--text-main); }
+    .date-picker { border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; font-size: 0.95rem; outline: none; margin-bottom: 12px; background: #f7fafc; color: var(--text-main); width: 100%; }
     .section-label { font-size: 0.95rem; font-weight: bold; color: var(--accent); margin: 16px 0 8px 0; display: flex; align-items: center; gap: 6px; }
     textarea { width: 100%; height: 85px; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; outline: none; resize: vertical; font-size: 0.95rem; font-family: inherit; background: #fff; color: var(--text-main); }
     textarea:focus { border-color: var(--accent); }
     .btn-group { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
     .sync-status { font-size: 0.82rem; color: var(--text-sub); }
     .save-btn { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-    .save-btn:hover { background: #2b6cb0; }
 
-    /* 日曆月視圖樣式 */
+    /* 日曆視圖 */
     .calendar-card { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .calendar-title { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
-    .cal-btn { background: transparent; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 12px; cursor: pointer; font-weight: bold; color: var(--text-sub); }
-    .cal-btn:hover { background: var(--accent-light); color: var(--accent); }
+    .cal-btn { background: transparent; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; color: var(--text-sub); }
 
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
     .weekday { font-size: 0.8rem; font-weight: bold; color: var(--text-sub); padding-bottom: 6px; }
-    .day-cell { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.9rem; position: relative; cursor: pointer; border: 1px solid transparent; }
-    .day-cell:hover { background: #edf2f7; }
+    .day-cell { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.9rem; position: relative; cursor: pointer; border: 1px solid transparent; touch-action: manipulation; }
     .day-cell.other-month { opacity: 0.25; cursor: default; }
     .day-cell.today { border-color: var(--accent); font-weight: bold; color: var(--accent); }
     .day-cell.has-entry { font-weight: bold; background: var(--accent-light); color: var(--accent); cursor: pointer; }
     .day-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; position: absolute; bottom: 5px; }
 
-    /* 懸浮彈窗 Modal (閱讀與編輯模式) */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px);
-      display: none; align-items: center; justify-content: center;
-      z-index: 1000; padding: 15px;
-    }
-    .modal-content {
-      background: #ffffff; border-radius: 20px; width: 100%; max-width: 580px;
-      max-height: 85vh; overflow-y: auto; padding: 26px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative;
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
-    .modal-title { font-size: 1.2rem; font-weight: bold; color: var(--text-main); }
-    .modal-close { font-size: 1.6rem; border: none; background: transparent; cursor: pointer; color: var(--text-sub); line-height: 1; }
+    /* 懸浮彈窗 Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
+    .modal-content { background: #ffffff; border-radius: 20px; width: 100%; max-width: 580px; max-height: 85vh; overflow-y: auto; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+    .modal-title { font-size: 1.15rem; font-weight: bold; color: var(--text-main); }
+    .modal-close { font-size: 1.8rem; border: none; background: transparent; cursor: pointer; color: var(--text-sub); padding: 0 8px; line-height: 1; }
     
-    .read-box {
-      background: #f8fafc; border-radius: 10px; padding: 14px 16px;
-      font-size: 0.95rem; color: #334155; white-space: pre-wrap; word-break: break-word;
-      border-left: 3px solid var(--accent); margin-bottom: 14px; min-height: 48px;
-    }
+    .read-box { background: #f8fafc; border-radius: 10px; padding: 12px 14px; font-size: 0.95rem; color: #334155; white-space: pre-wrap; word-break: break-word; border-left: 3px solid var(--accent); margin-bottom: 12px; min-height: 42px; }
     .read-box.empty { color: #a0aec0; font-style: italic; border-left-color: #cbd5e0; }
 
-    .modal-btn-group { display: flex; justify-content: space-between; margin-top: 24px; gap: 10px; }
-    .btn-danger { background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
-    .btn-edit-toggle { background: #edf2f7; color: #4a5568; border: 1px solid #cbd5e0; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
-    .btn-success { background: #38a169; color: white; border: none; padding: 9px 22px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
+    .modal-btn-group { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+    .btn-danger { background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: bold; }
+    .btn-edit-toggle { background: #edf2f7; color: #4a5568; border: 1px solid #cbd5e0; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: bold; }
+    .btn-success { background: #38a169; color: white; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: bold; }
   </style>
 </head>
 <body>
 
+  <!-- 密碼鎖畫面 -->
+  <div id="lockScreen">
+    <div class="lock-box">
+      <h2>🔒 321 離線日記</h2>
+      <p style="font-size: 0.85rem; color: #718096; margin-top: 6px;" id="lockDesc">請輸入解鎖密碼</p>
+      <input type="password" id="lockPasswordInput" class="lock-input" placeholder="輸入密碼">
+      <button class="lock-btn" onclick="unlockDiary()">進入日記</button>
+    </div>
+  </div>
+
   <header>
     <h1>321 離線日記 🌹</h1>
-    <span class="token-settings" onclick="setupToken()">🔑 Token 設定</span>
+    <div class="header-btns">
+      <span class="header-btn" onclick="setAppPassword()">🔒 設密碼</span>
+      <span class="header-btn" onclick="setupToken()">🔑 Token</span>
+    </div>
   </header>
 
-  <!-- 1. 呼吸圈置頂 -->
   <div class="breath-card">
     <div class="breath-circle-container">
       <div class="breath-circle" id="breathCircle" onclick="toggleBreath()">
@@ -152,18 +142,11 @@
     </div>
   </div>
 
-  <!-- 2. 中間切換按鈕 (寫日記 / 歷史紀錄) -->
   <div class="tab-container">
-    <button class="tab-btn active" id="btnTabWrite" onclick="switchTab('write')">
-      ✏️ 寫日記
-    </button>
-    <button class="tab-btn" id="btnTabHistory" onclick="switchTab('history')">
-      📖 歷史紀錄
-    </button>
+    <button class="tab-btn active" id="btnTabWrite" onclick="switchTab('write')">✏️ 寫日記</button>
+    <button class="tab-btn" id="btnTabHistory" onclick="switchTab('history')">📖 歷史紀錄</button>
   </div>
 
-  <!-- 3. 頁面內容區塊 -->
-  <!-- 頁面 A：寫日記 -->
   <div id="pageWrite" class="page-content active">
     <div class="editor-card">
       <input type="date" id="entryDate" class="date-picker">
@@ -184,7 +167,6 @@
     </div>
   </div>
 
-  <!-- 頁面 B：歷史紀錄 (月曆) -->
   <div id="pageHistory" class="page-content">
     <div class="calendar-card">
       <div class="calendar-header">
@@ -196,7 +178,6 @@
     </div>
   </div>
 
-  <!-- 懸浮彈窗 Modal (閱讀 / 編輯) -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -204,7 +185,6 @@
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
 
-      <!-- 閱讀模式 -->
       <div id="modalReadMode">
         <div class="section-label">✨ 三件感恩的事</div>
         <div class="read-box" id="readGratitude"></div>
@@ -221,7 +201,6 @@
         </div>
       </div>
 
-      <!-- 編輯模式 -->
       <div id="modalEditMode" style="display: none;">
         <div class="section-label">✨ 三件感恩的事</div>
         <textarea id="editGratitude"></textarea>
@@ -243,19 +222,75 @@
   <script>
     const GITHUB_REPO = "ekoh0822-ops/my-journal-data"; 
     const FILE_PATH = "journal.json";
+    
+    // Token 永久保留
     let githubToken = localStorage.getItem("gh_token") || localStorage.getItem("github_pwa_token") || "";
+    
+    // 密碼解鎖 2 小時過期設定 (毫秒)
+    const LOCK_EXPIRE_MS = 2 * 60 * 60 * 1000;
 
-    let diaryMap = {}; // 統一解析後以 Date 作為 key
-    let rawDataStore = null; // 原始數據備份
+    let diaryMap = {};
+    let rawDataStore = null;
     let fileSha = ""; 
     let activeModalDate = "";
     let currentCalDate = new Date();
 
     window.onload = () => {
+      checkLockStatus();
       document.getElementById("entryDate").value = getTodayStr();
-      loadDiaryData();
     };
 
+    // --- 密碼鎖邏輯 ---
+    function checkLockStatus() {
+      const savedPwd = localStorage.getItem("diary_app_pwd");
+      const lastUnlock = parseInt(localStorage.getItem("diary_unlock_time") || "0", 10);
+      const now = Date.now();
+
+      if (!savedPwd) {
+        // 未設定密碼，直接開啟
+        document.getElementById("lockScreen").style.display = "none";
+        loadDiaryData();
+      } else if (now - lastUnlock < LOCK_EXPIRE_MS) {
+        // 2小時內免輸入
+        document.getElementById("lockScreen").style.display = "none";
+        loadDiaryData();
+      } else {
+        // 需要解鎖
+        document.getElementById("lockScreen").style.display = "flex";
+      }
+    }
+
+    function unlockDiary() {
+      const savedPwd = localStorage.getItem("diary_app_pwd");
+      const inputPwd = document.getElementById("lockPasswordInput").value;
+
+      if (inputPwd === savedPwd) {
+        localStorage.setItem("diary_unlock_time", Date.now().toString());
+        document.getElementById("lockScreen").style.display = "none";
+        loadDiaryData();
+      } else {
+        alert("密碼不正確！");
+      }
+    }
+
+    function setAppPassword() {
+      const currentPwd = localStorage.getItem("diary_app_pwd");
+      let msg = currentPwd ? "請輸入新的解鎖密碼（留空則取消密碼）：" : "請設定開啟日記的解鎖密碼：";
+      const newPwd = prompt(msg);
+
+      if (newPwd !== null) {
+        if (newPwd.trim() === "") {
+          localStorage.removeItem("diary_app_pwd");
+          alert("已取消解鎖密碼！");
+        } else {
+          localStorage.setItem("diary_app_pwd", newPwd.trim());
+          localStorage.setItem("diary_unlock_time", Date.now().toString());
+          alert("密碼設定成功！解鎖後 2 小時內開啟免輸密碼。");
+        }
+      }
+    }
+
+    // --- 日記核心功能 ---
     function getTodayStr() {
       const now = new Date();
       const offset = now.getTimezoneOffset() * 60000;
@@ -287,12 +322,11 @@
       if (token !== null) {
         githubToken = token.trim();
         localStorage.setItem("gh_token", githubToken);
-        alert("Token 已儲存！");
+        alert("Token 已永久儲存！");
         loadDiaryData();
       }
     }
 
-    // 萬能資料解析器 (同時相容 陣列結構 與 物件結構)
     function parseRawData(data) {
       diaryMap = {};
       rawDataStore = data;
@@ -300,9 +334,7 @@
 
       if (Array.isArray(data)) {
         data.forEach(item => {
-          if (item && item.date) {
-            diaryMap[item.date] = item;
-          }
+          if (item && item.date) { diaryMap[item.date] = item; }
         });
       } else if (typeof data === "object") {
         Object.keys(data).forEach(key => {
@@ -316,21 +348,20 @@
       }
     }
 
-    // 載入資料
     async function loadDiaryData() {
       const local = localStorage.getItem("diary_data_v1") || localStorage.getItem("my_321_rose_journal");
       if (local) {
-        try { 
-          parseRawData(JSON.parse(local)); 
-          renderCalendar(); 
-        } catch(e){}
+        try { parseRawData(JSON.parse(local)); renderCalendar(); } catch(e){}
       }
 
-      if (!githubToken) return;
+      if (!githubToken) {
+        document.getElementById("syncStatus").innerText = "🔑 請設定 Token 以同步雲端";
+        return;
+      }
 
       document.getElementById("syncStatus").innerText = "🔄 雲端同步中...";
       try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}?t=${Date.now()}`, {
           headers: { "Authorization": `token ${githubToken}` }
         });
         if (res.ok) {
@@ -348,7 +379,6 @@
       }
     }
 
-    // 新增日記
     async function saveEntry() {
       const date = document.getElementById("entryDate").value;
       if (!date) return alert("請選擇日期！");
@@ -373,19 +403,15 @@
     }
 
     function saveLocalAndSync() {
-      let exportData;
-      if (Array.isArray(rawDataStore)) {
-        exportData = Object.values(diaryMap);
-      } else {
-        exportData = diaryMap;
-      }
+      let exportData = Array.isArray(rawDataStore) ? Object.values(diaryMap) : diaryMap;
       localStorage.setItem("diary_data_v1", JSON.stringify(exportData));
       renderCalendar();
       syncToGitHub(exportData);
     }
 
     async function syncToGitHub(exportData) {
-      if (!githubToken) return;
+      if (!githubToken) return alert("請先點擊右上角『🔑 Token』進行設定！");
+      
       document.getElementById("syncStatus").innerText = "🔄 正在備份至 GitHub...";
 
       try {
@@ -409,7 +435,6 @@
       } catch(err) {}
     }
 
-    // 渲染日曆
     function renderCalendar() {
       const grid = document.getElementById("calendarGrid");
       if (!grid) return;
@@ -454,8 +479,7 @@
           dot.className = "day-dot";
           cell.appendChild(dot);
           
-          // 點擊事件
-          cell.onclick = () => openModal(dateStr);
+          cell.onclick = (e) => { e.preventDefault(); openModal(dateStr); };
         }
 
         grid.appendChild(cell);
@@ -467,7 +491,6 @@
       renderCalendar();
     }
 
-    // 開啟浮窗 (Modal)
     function openModal(dateStr) {
       activeModalDate = dateStr;
       const data = diaryMap[dateStr];
